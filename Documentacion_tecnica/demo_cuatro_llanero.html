@@ -1,0 +1,1185 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prototipo: El Cuatro Llanero & Gramática Formal</title>
+    <style>
+        :root {
+            --bg-dark: #14110f;
+            --bg-panel: #1f1a17;
+            --bg-card: #29221e;
+            --accent-gold: #e6a145;
+            --accent-amber: #ffbe55;
+            --accent-red: #d9534f;
+            --accent-green: #5cb85c;
+            --accent-blue: #4ea8de;
+            --accent-purple: #b57edc;
+            --text-main: #f5ebe6;
+            --text-muted: #a89990;
+            --wood-dark: #4a2810;
+            --wood-mid: #7c4722;
+            --wood-light: #c88a4b;
+            --fret-gold: #d4af37;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 20px;
+            background-image: radial-gradient(circle at 50% 0%, #2c2018 0%, #14110f 75%);
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 20px;
+            border-bottom: 1px solid #382e28;
+            padding-bottom: 15px;
+        }
+
+        header h1 {
+            color: var(--accent-amber);
+            font-size: 1.9rem;
+            letter-spacing: 0.5px;
+        }
+
+        header p {
+            color: var(--text-muted);
+            font-size: 0.95rem;
+            margin-top: 6px;
+        }
+
+        .main-grid {
+            display: grid;
+            grid-template-columns: 1.15fr 1fr;
+            gap: 20px;
+            max-width: 1360px;
+            margin: 0 auto;
+        }
+
+        @media (max-width: 1024px) {
+            .main-grid {
+                grid-template-columns: 1fr;
+            }
+        }
+
+        .panel {
+            background: var(--bg-panel);
+            border: 1px solid #3a2e27;
+            border-radius: 14px;
+            padding: 18px;
+            box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+        }
+
+        .panel-title {
+            font-size: 1.1rem;
+            font-weight: 700;
+            color: var(--accent-gold);
+            margin-bottom: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            border-bottom: 1px solid #332923;
+            padding-bottom: 8px;
+        }
+
+        /* --- CUATRO VISUAL --- */
+        .cuatro-container {
+            position: relative;
+            background: linear-gradient(180deg, #161210 0%, #1d1714 100%);
+            border-radius: 12px;
+            padding: 16px;
+            border: 1px solid #3c2f26;
+            overflow: hidden;
+        }
+
+        .chord-status-bar {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 12px;
+            flex-wrap: wrap;
+            gap: 10px;
+        }
+
+        .current-chord-badge {
+            background: var(--bg-card);
+            border-left: 4px solid var(--accent-amber);
+            padding: 8px 14px;
+            border-radius: 6px;
+            font-size: 1rem;
+            font-weight: 600;
+        }
+
+        .tuning-note {
+            font-size: 0.82rem;
+            color: var(--text-muted);
+            background: #14110f;
+            padding: 6px 10px;
+            border-radius: 6px;
+            border: 1px solid #2e2520;
+        }
+
+        svg#cuatro-svg {
+            width: 100%;
+            height: 250px;
+            display: block;
+            user-select: none;
+        }
+
+        /* --- BOTONES DE TOKENS (TECLAS) --- */
+        .tokens-row {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 10px;
+            margin-top: 14px;
+        }
+
+        .token-btn {
+            background: var(--bg-card);
+            border: 2px solid #473930;
+            border-radius: 10px;
+            padding: 12px 8px;
+            color: var(--text-main);
+            cursor: pointer;
+            text-align: center;
+            transition: all 0.12s ease;
+            position: relative;
+            user-select: none;
+        }
+
+        .token-btn:hover {
+            border-color: var(--accent-amber);
+            transform: translateY(-2px);
+        }
+
+        .token-btn.active {
+            transform: scale(0.95);
+            background: #3d2f24;
+            border-color: var(--accent-amber);
+            box-shadow: 0 0 15px rgba(255, 190, 85, 0.4);
+        }
+
+        .token-symbol {
+            font-size: 1.5rem;
+            font-weight: 800;
+            display: block;
+        }
+
+        .token-name {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            display: block;
+            margin-top: 2px;
+        }
+
+        .token-key {
+            display: inline-block;
+            margin-top: 6px;
+            font-size: 0.72rem;
+            background: #14110f;
+            color: var(--accent-amber);
+            padding: 2px 7px;
+            border-radius: 4px;
+            border: 1px solid #3d312a;
+            font-family: monospace;
+        }
+
+        .token-btn[data-token="T"] .token-symbol { color: #5cb85c; }
+        .token-btn[data-token="S"] .token-symbol { color: #4ea8de; }
+        .token-btn[data-token="D"] .token-symbol { color: #ffbe55; }
+        .token-btn[data-token="M"] .token-symbol { color: #b57edc; }
+        .token-btn[data-token="F"] .token-symbol { color: #d9534f; }
+
+        /* --- BUFFER / PARSER EN TIEMPO REAL --- */
+        .parser-box {
+            margin-top: 16px;
+            background: #151210;
+            border: 1px solid #382e28;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .parser-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 0.85rem;
+            color: var(--text-muted);
+            margin-bottom: 10px;
+        }
+
+        .token-stream {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            min-height: 48px;
+            padding: 8px;
+            background: #1c1714;
+            border-radius: 8px;
+            overflow-x: auto;
+            border: 1px dashed #3a2f29;
+        }
+
+        .stream-pill {
+            padding: 6px 12px;
+            border-radius: 6px;
+            font-weight: 700;
+            font-family: monospace;
+            font-size: 1rem;
+            background: #2c241f;
+            border: 1px solid #524238;
+            animation: popIn 0.15s ease-out;
+        }
+
+        .stream-arrow {
+            color: var(--text-muted);
+            font-weight: bold;
+        }
+
+        @keyframes popIn {
+            from { transform: scale(0.6); opacity: 0; }
+            to { transform: scale(1); opacity: 1; }
+        }
+
+        .parser-result {
+            margin-top: 12px;
+            padding: 10px 14px;
+            border-radius: 8px;
+            font-size: 0.92rem;
+            font-weight: 600;
+            background: #221c18;
+            border-left: 4px solid #555;
+            transition: all 0.2s ease;
+        }
+
+        .parser-result.valid {
+            background: rgba(92, 184, 92, 0.14);
+            border-left-color: var(--accent-green);
+            color: #98e698;
+        }
+
+        .parser-result.invalid {
+            background: rgba(217, 83, 79, 0.15);
+            border-left-color: var(--accent-red);
+            color: #f29592;
+        }
+
+        /* --- LISTA DE 6 SECUENCIAS --- */
+        .sequences-grid {
+            display: grid;
+            grid-template-columns: 1fr;
+            gap: 10px;
+        }
+
+        .seq-card {
+            background: var(--bg-card);
+            border: 1px solid #3c3029;
+            border-radius: 10px;
+            padding: 12px 14px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            gap: 12px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .seq-card.playing {
+            border-color: var(--accent-amber);
+            background: #362a21;
+            box-shadow: 0 0 14px rgba(230, 161, 69, 0.25);
+        }
+
+        .seq-info h3 {
+            font-size: 0.98rem;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .seq-badge {
+            font-size: 0.7rem;
+            padding: 2px 7px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: 700;
+        }
+
+        .badge-atk { background: rgba(217, 83, 79, 0.2); color: #f28b88; border: 1px solid #d9534f; }
+        .badge-def { background: rgba(78, 168, 222, 0.2); color: #87c7f0; border: 1px solid #4ea8de; }
+        .badge-heal { background: rgba(92, 184, 92, 0.2); color: #8fd98f; border: 1px solid #5cb85c; }
+        .badge-rec { background: rgba(181, 126, 220, 0.2); color: #d3aae8; border: 1px solid #b57edc; }
+
+        .seq-grammar {
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: var(--accent-amber);
+            margin-top: 4px;
+            letter-spacing: 0.5px;
+        }
+
+        .seq-desc {
+            font-size: 0.8rem;
+            color: var(--text-muted);
+            margin-top: 3px;
+        }
+
+        .play-seq-btn {
+            background: var(--accent-gold);
+            color: #14110f;
+            border: none;
+            border-radius: 8px;
+            padding: 9px 14px;
+            font-weight: 700;
+            font-size: 0.84rem;
+            cursor: pointer;
+            white-space: nowrap;
+            transition: background 0.15s, transform 0.1s;
+        }
+
+        .play-seq-btn:hover {
+            background: var(--accent-amber);
+            transform: scale(1.03);
+        }
+
+        .play-seq-btn:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        /* --- MAQUINA DE TURING MULTICINTA --- */
+        .turing-box {
+            margin-top: 16px;
+            background: #161210;
+            border: 1px solid #382e28;
+            border-radius: 10px;
+            padding: 14px;
+        }
+
+        .tape-row {
+            display: flex;
+            align-items: center;
+            margin-bottom: 8px;
+            gap: 10px;
+        }
+
+        .tape-label {
+            width: 155px;
+            font-size: 0.78rem;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .tape-cells {
+            display: flex;
+            gap: 4px;
+            overflow-x: auto;
+        }
+
+        .tape-cell {
+            width: 32px;
+            height: 32px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #231d19;
+            border: 1px solid #3d322b;
+            border-radius: 5px;
+            font-family: monospace;
+            font-weight: 700;
+            font-size: 0.88rem;
+            color: var(--text-muted);
+        }
+
+        .tape-cell.head {
+            border: 2px solid var(--accent-amber);
+            background: #3b2d1f;
+            color: #fff;
+            box-shadow: 0 0 8px rgba(255, 190, 85, 0.35);
+        }
+
+        .clear-btn {
+            background: transparent;
+            border: 1px solid #524238;
+            color: var(--text-muted);
+            padding: 4px 10px;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 0.78rem;
+        }
+
+        .clear-btn:hover {
+            color: #fff;
+            border-color: var(--accent-red);
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>🎸 Simulador Interactivo: El Cuatro Llanero & Gramática ANTLR</h1>
+        <p>Prueba cómo suenan los acordes reales del Cuatro Llanero ("Cambur Pintón"), cómo se colocan los dedos en los trastes y cómo el Parser valida las 6 secuencias.</p>
+    </header>
+
+    <div class="main-grid">
+        <!-- COLUMNA IZQUIERDA: CUATRO INTERACTIVO + PARSER -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>1. Diapasón del Cuatro Llanero (Vista de Ejecución)</span>
+                <span style="font-size:0.8rem; color:var(--text-muted);">Usa el teclado: [A] [S] [D] [W] y [Espacio]</span>
+            </div>
+
+            <div class="cuatro-container">
+                <div class="chord-status-bar">
+                    <div class="current-chord-badge" id="chord-display">
+                        Acorde Actual: <span style="color:var(--accent-amber)">En reposo (Toca una tecla)</span>
+                    </div>
+                    <div class="tuning-note">
+                        Afinación Tradicional: <strong>La (4ª) · Re (3ª) · Fa# (2ª) · Si (1ª)</strong>
+                    </div>
+                </div>
+
+                <!-- SVG DEL CUATRO LLANERO -->
+                <svg id="cuatro-svg" viewBox="0 0 780 240">
+                    <defs>
+                        <linearGradient id="neckGrad" x1="0" y1="0" x2="0" y2="1">
+                            <stop offset="0%" stop-color="#3b200d"/>
+                            <stop offset="50%" stop-color="#593216"/>
+                            <stop offset="100%" stop-color="#2e1809"/>
+                        </linearGradient>
+                        <linearGradient id="bodyGrad" x1="0" y1="0" x2="1" y2="1">
+                            <stop offset="0%" stop-color="#c67d3b"/>
+                            <stop offset="100%" stop-color="#8c4f19"/>
+                        </linearGradient>
+                        <linearGradient id=" golpeadorGrad" x1="0" y1="0" x2="1" y2="0">
+                            <stop offset="0%" stop-color="#541e14"/>
+                            <stop offset="100%" stop-color="#38110a"/>
+                        </linearGradient>
+                    </defs>
+
+                    <!-- Caja armónica (derecha) -->
+                    <path d="M 470,15 Q 560,0 760,10 L 760,230 Q 560,240 470,225 Z" fill="url(#bodyGrad)" stroke="#3b200d" stroke-width="4"/>
+                    
+                    <!-- Golpeador (Sobre-tapa característica del cuatro para el Frenao) -->
+                    <rect x="480" y="25" width="120" height="190" rx="8" fill="url(#golpeadorGrad)" opacity="0.85"/>
+                    <text x="540" y="205" fill="#a86454" font-size="11" text-anchor="middle" font-weight="bold">GOLPEADOR (FRENAO)</text>
+
+                    <!-- Boca del cuatro (Roseta) -->
+                    <circle cx="645" cy="120" r="54" fill="#120c09" stroke="#e6a145" stroke-width="5"/>
+                    <circle cx="645" cy="120" r="61" fill="none" stroke="#3b200d" stroke-width="2" stroke-dasharray="6,4"/>
+
+                    <!-- Diapasón / Mástil (izquierda) -->
+                    <rect x="70" y="38" width="430" height="164" fill="url(#neckGrad)" stroke="#241307" stroke-width="3"/>
+
+                    <!-- Cejuela (Nut) -->
+                    <rect x="62" y="36" width="10" height="168" fill="#f0e6d2" rx="2"/>
+
+                    <!-- Trastes (Frets 1 al 5) -->
+                    <g stroke="#d4af37" stroke-width="3.5">
+                        <line x1="155" y1="38" x2="155" y2="202"/>
+                        <line x1="240" y1="38" x2="240" y2="202"/>
+                        <line x1="325" y1="38" x2="325" y2="202"/>
+                        <line x1="410" y1="38" x2="410" y2="202"/>
+                        <line x1="495" y1="38" x2="495" y2="202"/>
+                    </g>
+
+                    <!-- Numeración de Trastes -->
+                    <g fill="#a89990" font-size="12" text-anchor="middle" font-weight="bold">
+                        <text x="112" y="25">Traste 1</text>
+                        <text x="197" y="25">Traste 2</text>
+                        <text x="282" y="25">Traste 3</text>
+                        <text x="367" y="25">Traste 4</text>
+                        <text x="452" y="25">Traste 5</text>
+                    </g>
+
+                    <!-- Marcadores nacarados del diapasón -->
+                    <circle cx="282" cy="120" r="6" fill="#d9cfc3" opacity="0.45"/>
+                    <circle cx="452" cy="120" r="6" fill="#d9cfc3" opacity="0.45"/>
+
+                    <!-- Nombres de las 4 cuerdas a la izquierda -->
+                    <g fill="#e6a145" font-size="13" font-weight="bold" text-anchor="end">
+                        <text x="52" y="65">4ª (La)</text>
+                        <text x="52" y="103">3ª (Re)</text>
+                        <text x="52" y="141">2ª (Fa#)</text>
+                        <text x="52" y="179">1ª (Si)</text>
+                    </g>
+
+                    <!-- Las 4 Cuerdas del Cuatro -->
+                    <line id="str-0" x1="65" y1="60"  x2="755" y2="60"  stroke="#e0d6c8" stroke-width="3.2"/>
+                    <line id="str-1" x1="65" y1="98"  x2="755" y2="98"  stroke="#e0d6c8" stroke-width="2.6"/>
+                    <line id="str-2" x1="65" y1="136" x2="755" y2="136" stroke="#e0d6c8" stroke-width="2.1"/>
+                    <line id="str-3" x1="65" y1="174" x2="755" y2="174" stroke="#e0d6c8" stroke-width="2.4"/>
+
+                    <!-- Grupo dinámico para los dedos en los trastes -->
+                    <g id="finger-dots"></g>
+
+                    <!-- Indicador visual de Mano Derecha (Rasgueo / Frenao) -->
+                    <g id="strum-indicator" opacity="0">
+                        <rect id="strum-bar" x="545" y="40" width="16" height="160" rx="8" fill="#ffbe55" opacity="0.75"/>
+                        <text id="strum-text" x="553" y="22" fill="#ffbe55" font-size="13" font-weight="bold" text-anchor="middle">RASGUEO ↓</text>
+                    </g>
+                </svg>
+
+                <!-- CONTROLES DE LOS 5 TOKENS -->
+                <div class="tokens-row">
+                    <div class="token-btn" data-token="T" onclick="triggerToken('T')">
+                        <span class="token-symbol">T</span>
+                        <span class="token-name">Tónica (Re Mayor)</span>
+                        <span class="token-key">Tecla [A]</span>
+                    </div>
+                    <div class="token-btn" data-token="S" onclick="triggerToken('S')">
+                        <span class="token-symbol">S</span>
+                        <span class="token-name">Subdom (Sol Mayor)</span>
+                        <span class="token-key">Tecla [S]</span>
+                    </div>
+                    <div class="token-btn" data-token="D" onclick="triggerToken('D')">
+                        <span class="token-symbol">D</span>
+                        <span class="token-name">Dominante (La 7)</span>
+                        <span class="token-key">Tecla [D]</span>
+                    </div>
+                    <div class="token-btn" data-token="M" onclick="triggerToken('M')">
+                        <span class="token-symbol">M</span>
+                        <span class="token-name">Menor (Si menor)</span>
+                        <span class="token-key">Tecla [W]</span>
+                    </div>
+                    <div class="token-btn" data-token="F" onclick="triggerToken('F')">
+                        <span class="token-symbol">F</span>
+                        <span class="token-name">Frenao (Remate)</span>
+                        <span class="token-key">[Espacio]</span>
+                    </div>
+                </div>
+            </div>
+
+            <!-- ANALIZADOR LÉXICO / SINTÁCTICO (ANTLR SIMULADO) -->
+            <div class="parser-box">
+                <div class="parser-header">
+                    <span><strong>2. Buffer Léxico & Analizador Sintáctico (ANTLR4):</strong> Presiona <code>F (Espacio)</code> para evaluar la cadena</span>
+                    <button class="clear-btn" onclick="resetBuffer()">Limpiar Cadena</button>
+                </div>
+                <div class="token-stream" id="token-stream">
+                    <span style="color:var(--text-muted); font-size:0.85rem;">Toca acordes o elige una de las 6 secuencias a la derecha...</span>
+                </div>
+                <div class="parser-result" id="parser-result">
+                    Estado del Parser: Esperando secuencia de acordes terminada en <strong>F (Frenao)</strong>...
+                </div>
+            </div>
+
+            <!-- MÁQUINA DE TURING MULTICINTA -->
+            <div class="turing-box">
+                <div class="parser-header" style="margin-bottom:8px;">
+                    <span><strong>3. Reacción de la Máquina de Turing Multicinta (IA del Enemigo):</strong></span>
+                    <span id="tm-state-badge" style="color:var(--accent-amber); font-family:monospace; font-weight:bold;">Estado: q0 (Observando)</span>
+                </div>
+                <div class="tape-row">
+                    <div class="tape-label">Cinta 1 (Historial Jugador):</div>
+                    <div class="tape-cells" id="tape-1"></div>
+                </div>
+                <div class="tape-row">
+                    <div class="tape-label">Cinta 2 (Furia / Repetición):</div>
+                    <div class="tape-cells" id="tape-2"></div>
+                </div>
+                <div class="tape-row" style="margin-bottom:0;">
+                    <div class="tape-label">Cinta 3 (Acción Enemigo):</div>
+                    <div class="tape-cells" id="tape-3"></div>
+                </div>
+            </div>
+        </div>
+
+        <!-- COLUMNA DERECHA: LAS 6 SECUENCIAS DE LA GRAMÁTICA -->
+        <div class="panel">
+            <div class="panel-title">
+                <span>Catálogo de las 6 Secuencias Gramaticales (Golpes Llaneros)</span>
+            </div>
+            <p style="font-size:0.86rem; color:var(--text-muted); margin-bottom:14px;">
+                Haz clic en <strong>"▶ Escuchar Golpe"</strong> para que el cuatro toque automáticamente cada regla de la gramática con ritmo de joropo, o tócala tú mismo con el teclado.
+            </p>
+
+            <div class="sequences-grid">
+                <!-- 1. GABAN -->
+                <div class="seq-card" id="card-gaban">
+                    <div class="seq-info">
+                        <h3>1. Golpe de Gabán <span class="seq-badge badge-atk">Ataque Rápido</span></h3>
+                        <div class="seq-grammar">Regla: T → D → D → T → F</div>
+                        <div class="seq-desc">Re Mayor → La7 → La7 → Re Mayor → Frenao. Ataque acústico directo.</div>
+                    </div>
+                    <button class="play-seq-btn" onclick="playSequence(['T','D','D','T','F'], 'card-gaban')">▶ Escuchar Golpe</button>
+                </div>
+
+                <!-- 2. PAJARILLO -->
+                <div class="seq-card" id="card-pajarillo">
+                    <div class="seq-info">
+                        <h3>2. Golpe de Pajarillo <span class="seq-badge badge-atk">Ataque Pesado</span></h3>
+                        <div class="seq-grammar">Regla: M → S → D → M → F</div>
+                        <div class="seq-desc">Si menor → Sol Mayor → La7 → Si menor → Frenao. Joropo recio en tono menor.</div>
+                    </div>
+                    <button class="play-seq-btn" onclick="playSequence(['M','S','D','M','F'], 'card-pajarillo')">▶ Escuchar Golpe</button>
+                </div>
+
+                <!-- 3. SEIS POR DERECHO -->
+                <div class="seq-card" id="card-seis">
+                    <div class="seq-info">
+                        <h3>3. Seis por Derecho <span class="seq-badge badge-def">Defensa / Parry</span></h3>
+                        <div class="seq-grammar">Regla: T → S → D → T → F</div>
+                        <div class="seq-desc">Re Mayor → Sol Mayor → La7 → Re Mayor → Frenao. Cadencia clásica brillante.</div>
+                    </div>
+                    <button class="play-seq-btn" onclick="playSequence(['T','S','D','T','F'], 'card-seis')">▶ Escuchar Golpe</button>
+                </div>
+
+                <!-- 4. ZUMBE Y ZUMBE -->
+                <div class="seq-card" id="card-zumbe">
+                    <div class="seq-info">
+                        <h3>4. Zumbe y Zumbe <span class="seq-badge badge-def">Aturdir / Cortar</span></h3>
+                        <div class="seq-grammar">Regla: S → D → S → D → F</div>
+                        <div class="seq-desc">Sol Mayor → La7 → Sol Mayor → La7 → Frenao. Síncopa de tensión que interrumpe al jefe.</div>
+                    </div>
+                    <button class="play-seq-btn" onclick="playSequence(['S','D','S','D','F'], 'card-zumbe')">▶ Escuchar Golpe</button>
+                </div>
+
+                <!-- 5. TONADA -->
+                <div class="seq-card" id="card-tonada">
+                    <div class="seq-info">
+                        <h3>5. Tonada de Sabana <span class="seq-badge badge-heal">Curación / Buff</span></h3>
+                        <div class="seq-grammar">Regla: T → M → S → T → F</div>
+                        <div class="seq-desc">Re Mayor → Si menor → Sol Mayor → Re Mayor → Frenao. Progresión melódica suave.</div>
+                    </div>
+                    <button class="play-seq-btn" onclick="playSequence(['T','M','S','T','F'], 'card-tonada')">▶ Escuchar Golpe</button>
+                </div>
+
+                <!-- 6. CONTRAPUNTEO RECURSIVO -->
+                <div class="seq-card" id="card-contrapunteo">
+                    <div class="seq-info">
+                        <h3>6. Contrapunteo Libre <span class="seq-badge badge-rec">Combo Recursivo</span></h3>
+                        <div class="seq-grammar">Regla: T → D → (S → D → T)+ → F</div>
+                        <div class="seq-desc">Puedes repetir el ciclo <code>(S → D → T)</code> 1, 2, 3 o más veces antes del Frenao para multiplicar el daño.</div>
+                    </div>
+                    <button class="play-seq-btn" onclick="playSequence(['T','D','S','D','T','S','D','T','F'], 'card-contrapunteo')">▶ Escuchar Combo x2</button>
+                </div>
+
+                <!-- DEMO DE ERROR SINTÁCTICO -->
+                <div class="seq-card" id="card-error" style="border-style:dashed; border-color:#69302e;">
+                    <div class="seq-info">
+                        <h3 style="color:#f28b88;">❌ Prueba de Error Sintáctico (Desafinar)</h3>
+                        <div class="seq-grammar" style="color:#f28b88;">Cadena Inválida: T → T → M → F</div>
+                        <div class="seq-desc">Demuestra qué ocurre cuando la secuencia no pertenece a la gramática de ANTLR.</div>
+                    </div>
+                    <button class="play-seq-btn" style="background:#d9534f; color:#fff;" onclick="playSequence(['T','T','M','F'], 'card-error')">▶ Probar Fallo</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // =========================================================================
+        // 1. DEFINICIÓN REAL DE LOS ACORDES DEL CUATRO LLANERO
+        // Afinación estándar del Cuatro ("Cambur Pintón"):
+        // 4ª cuerda: La3 (220.00 Hz)
+        // 3ª cuerda: Re4 (293.66 Hz)
+        // 2ª cuerda: Fa#4 (369.99 Hz)
+        // 1ª cuerda: Si3 (246.94 Hz) -> ¡Característica cuerda re-entrante del cuatro!
+        // =========================================================================
+        const OPEN_STRINGS_HZ = [220.00, 293.66, 369.99, 246.94];
+        const STRING_Y = [60, 98, 136, 174];
+        // Coordenadas X del centro de cada traste en el SVG (0 = al aire, 1..5 = trastes)
+        const FRET_X = [66, 112, 197, 282, 367, 452];
+
+        const CHORDS = {
+            'T': {
+                name: 'Re Mayor (Tónica)',
+                color: '#5cb85c',
+                // Re Mayor en Cuatro: 4ª(0 - La), 3ª(0 - Re), 2ª(0 - Fa#), 1ª(3er traste - Re)
+                frets: [0, 0, 0, 3],
+                notes: ['La', 'Re', 'Fa#', 'Re']
+            },
+            'S': {
+                name: 'Sol Mayor (Subdominante)',
+                color: '#4ea8de',
+                // Sol Mayor en Cuatro: 4ª(2º traste - Si), 3ª(0 - Re), 2ª(1er traste - Sol), 1ª(0 - Si)
+                frets: [2, 0, 1, 0],
+                notes: ['Si', 'Re', 'Sol', 'Si']
+            },
+            'D': {
+                name: 'La 7ma (Dominante)',
+                color: '#ffbe55',
+                // La 7 en Cuatro: 4ª(0 - La), 3ª(2º traste - Mi), 2ª(1er traste - Sol), 1ª(2º traste - Do#)
+                frets: [0, 2, 1, 2],
+                notes: ['La', 'Mi', 'Sol', 'Do#']
+            },
+            'M': {
+                name: 'Si menor (Menor Relativo)',
+                color: '#b57edc',
+                // Si menor en Cuatro: 4ª(2º traste - Si), 3ª(0 - Re), 2ª(0 - Fa#), 1ª(0 - Si)
+                frets: [2, 0, 0, 0],
+                notes: ['Si', 'Re', 'Fa#', 'Si']
+            },
+            'F': {
+                name: '¡Frenao / Chasquido! (Cierre)',
+                color: '#d9534f',
+                frets: [0, 0, 0, 0],
+                notes: ['X', 'X', 'X', 'X']
+            }
+        };
+
+        // =========================================================================
+        // 2. SINTETIZADOR DE AUDIO DEL CUATRO LLANERO (WEB AUDIO API)
+        // =========================================================================
+        let audioCtx = null;
+
+        function initAudio() {
+            if (!audioCtx) {
+                audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            }
+            if (audioCtx.state === 'suspended') {
+                audioCtx.resume();
+            }
+        }
+
+        // Calcula la frecuencia real según el traste pisado: f = f0 * 2^(traste/12)
+        function getFreq(stringIndex, fret) {
+            return OPEN_STRINGS_HZ[stringIndex] * Math.pow(2, fret / 12);
+        }
+
+        // Sintetiza el punteo/rasgueo de una cuerda de nylon cálida (estilo Cuatro)
+        function pluckString(freq, delaySeconds) {
+            const now = audioCtx.currentTime + delaySeconds;
+
+            // Oscilador principal (cuerpo cálido de cuerda de nylon) + armónico brillante
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const filter = audioCtx.createBiquadFilter();
+            const gain = audioCtx.createGain();
+
+            osc1.type = 'triangle';
+            osc2.type = 'sawtooth';
+
+            osc1.frequency.setValueAtTime(freq, now);
+            osc2.frequency.setValueAtTime(freq, now);
+
+            // Mezcla de armónicos
+            const osc2Gain = audioCtx.createGain();
+            osc2Gain.gain.setValueAtTime(0.28, now);
+
+            // Filtro pasa-bajos con envolvente para simular el ataque de la uña/dedo
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(2600, now);
+            filter.frequency.exponentialRampToValueAtTime(420, now + 0.65);
+
+            // Envolvente acústica percusiva
+            gain.gain.setValueAtTime(0.001, now);
+            gain.gain.linearRampToValueAtTime(0.26, now + 0.012);
+            gain.gain.exponentialRampToValueAtTime(0.0008, now + 0.95);
+
+            osc1.connect(filter);
+            osc2.connect(osc2Gain);
+            osc2Gain.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + 1.0);
+            osc2.stop(now + 1.0);
+        }
+
+        // Sonido del "Frenao / Chasquido" llanero (golpe seco percusivo sobre las cuerdas y madera)
+        function playFrenaoSound() {
+            initAudio();
+            const now = audioCtx.currentTime;
+
+            // 1. Ruido blanco filtrado (chasquido de uñas contra las cuerdas tapadas)
+            const bufferSize = audioCtx.sampleRate * 0.14;
+            const noiseBuffer = audioCtx.createBuffer(1, bufferSize, audioCtx.sampleRate);
+            const output = noiseBuffer.getChannelData(0);
+            for (let i = 0; i < bufferSize; i++) {
+                output[i] = (Math.random() * 2 - 1) * Math.exp(-i / (audioCtx.sampleRate * 0.035));
+            }
+
+            const whiteNoise = audioCtx.createBufferSource();
+            whiteNoise.buffer = noiseBuffer;
+
+            const bandpass = audioCtx.createBiquadFilter();
+            bandpass.type = 'bandpass';
+            bandpass.frequency.setValueAtTime(1100, now);
+            bandpass.Q.setValueAtTime(1.8, now);
+
+            const noiseGain = audioCtx.createGain();
+            noiseGain.gain.setValueAtTime(0.7, now);
+            noiseGain.gain.exponentialRampToValueAtTime(0.01, now + 0.13);
+
+            whiteNoise.connect(bandpass);
+            bandpass.connect(noiseGain);
+            noiseGain.connect(audioCtx.destination);
+            whiteNoise.start(now);
+
+            // 2. Golpe grave en la madera del golpeador
+            const woodOsc = audioCtx.createOscillator();
+            const woodGain = audioCtx.createGain();
+            woodOsc.type = 'sine';
+            woodOsc.frequency.setValueAtTime(160, now);
+            woodOsc.frequency.exponentialRampToValueAtTime(55, now + 0.09);
+
+            woodGain.gain.setValueAtTime(0.5, now);
+            woodGain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+            woodOsc.connect(woodGain);
+            woodGain.connect(audioCtx.destination);
+            woodOsc.start(now);
+            woodOsc.stop(now + 0.11);
+        }
+
+        // Sonido de Error Sintáctico (cuerda desafinada)
+        function playErrorSound() {
+            initAudio();
+            const now = audioCtx.currentTime;
+            const badFreqs = [155, 207, 290, 233]; // Acorde disonante
+            badFreqs.forEach((f, idx) => {
+                const osc = audioCtx.createOscillator();
+                const gain = audioCtx.createGain();
+                osc.type = 'sawtooth';
+                osc.frequency.setValueAtTime(f, now + idx * 0.03);
+                osc.frequency.linearRampToValueAtTime(f * 0.91, now + 0.45); // Se desafina hacia abajo
+                gain.gain.setValueAtTime(0.14, now);
+                gain.gain.exponentialRampToValueAtTime(0.001, now + 0.5);
+                osc.connect(gain);
+                gain.connect(audioCtx.destination);
+                osc.start(now + idx * 0.03);
+                osc.stop(now + 0.52);
+            });
+        }
+
+        // =========================================================================
+        // 3. VISUALIZACIÓN DEL CUATRO (DEDOS EN TRASTES Y VIBRACIÓN DE CUERDAS)
+        // =========================================================================
+        let strumDirectionDown = true;
+
+        function renderCuatroChord(token) {
+            const chord = CHORDS[token];
+            const dotsGroup = document.getElementById('finger-dots');
+            const chordDisplay = document.getElementById('chord-display');
+            const strumIndicator = document.getElementById('strum-indicator');
+            const strumBar = document.getElementById('strum-bar');
+            const strumText = document.getElementById('strum-text');
+
+            dotsGroup.innerHTML = '';
+
+            // Actualizar etiqueta superior
+            chordDisplay.innerHTML = `Acorde Actual: <span style="color:${chord.color}">[${token}] ${chord.name}</span>`;
+
+            if (token === 'F') {
+                // Mostrar mano apagando las 4 cuerdas (Frenao)
+                const muteBar = document.createElementNS('http://www.w3.org/2000/svg', 'rect');
+                muteBar.setAttribute('x', '515');
+                muteBar.setAttribute('y', '45');
+                muteBar.setAttribute('width', '28');
+                muteBar.setAttribute('height', '150');
+                muteBar.setAttribute('rx', '6');
+                muteBar.setAttribute('fill', '#d9534f');
+                muteBar.setAttribute('opacity', '0.88');
+                dotsGroup.appendChild(muteBar);
+
+                strumBar.setAttribute('fill', '#d9534f');
+                strumText.setAttribute('fill', '#d9534f');
+                strumText.textContent = '¡FRENAO! ✖';
+                strumIndicator.setAttribute('opacity', '1');
+                setTimeout(() => strumIndicator.setAttribute('opacity', '0'), 280);
+                return;
+            }
+
+            // Dibujar los dedos en los trastes correspondientes para las 4 cuerdas
+            chord.frets.forEach((fret, stringIdx) => {
+                const y = STRING_Y[stringIdx];
+                const x = FRET_X[fret];
+
+                const circle = document.createElementNS('http://www.w3.org/2000/svg', 'circle');
+                circle.setAttribute('cx', x);
+                circle.setAttribute('cy', y);
+                circle.setAttribute('r', fret === 0 ? '9' : '13');
+                circle.setAttribute('fill', fret === 0 ? '#2b221c' : chord.color);
+                circle.setAttribute('stroke', fret === 0 ? chord.color : '#fff');
+                circle.setAttribute('stroke-width', '2.5');
+                dotsGroup.appendChild(circle);
+
+                const label = document.createElementNS('http://www.w3.org/2000/svg', 'text');
+                label.setAttribute('x', x);
+                label.setAttribute('y', y + 4);
+                label.setAttribute('fill', fret === 0 ? chord.color : '#14110f');
+                label.setAttribute('font-size', '10');
+                label.setAttribute('font-weight', 'bold');
+                label.setAttribute('text-anchor', 'middle');
+                label.textContent = chord.notes[stringIdx];
+                dotsGroup.appendChild(label);
+
+                // Animar vibración de la cuerda desde el traste pisado hasta el puente
+                const strLine = document.getElementById(`str-${stringIdx}`);
+                strLine.setAttribute('stroke', chord.color);
+                setTimeout(() => {
+                    strLine.setAttribute('stroke', '#e0d6c8');
+                }, 260);
+            });
+
+            // Mostrar indicador de rasgueo (Charleo arriba/abajo)
+            strumBar.setAttribute('fill', chord.color);
+            strumText.setAttribute('fill', chord.color);
+            strumText.textContent = strumDirectionDown ? 'RASGUEO ↓' : 'RASGUEO ↑';
+            strumDirectionDown = !strumDirectionDown;
+            strumIndicator.setAttribute('opacity', '1');
+            setTimeout(() => strumIndicator.setAttribute('opacity', '0'), 240);
+        }
+
+        // =========================================================================
+        // 4. PARSER DE LA GRAMÁTICA ANTLR4 Y MÁQUINA DE TURING MULTICINTA
+        // =========================================================================
+        let tokenBuffer = [];
+        let isAutoPlaying = false;
+
+        // Estado de la Máquina de Turing de 3 Cintas
+        let tape1 = ['B', 'B', 'B', 'B', 'B', 'B', 'B']; // Historial de acciones del jugador
+        let tape2 = ['0', '0', '0', '0', '0', '0', '0']; // Contador unario de repetición/furia
+        let tape3 = ['B', 'B', 'B', 'B', 'B', 'B', 'B']; // Respuesta táctica del enemigo
+        let head1 = 0, head2 = 0, head3 = 0;
+
+        function renderTapes(stateName) {
+            document.getElementById('tm-state-badge').textContent = `Estado: ${stateName}`;
+            const drawTape = (elId, arr, headIdx) => {
+                const container = document.getElementById(elId);
+                container.innerHTML = '';
+                arr.forEach((sym, idx) => {
+                    const cell = document.createElement('div');
+                    cell.className = 'tape-cell' + (idx === headIdx ? ' head' : '');
+                    cell.textContent = sym;
+                    container.appendChild(cell);
+                });
+            };
+            drawTape('tape-1', tape1, head1);
+            drawTape('tape-2', tape2, head2);
+            drawTape('tape-3', tape3, head3);
+        }
+
+        renderTapes('q0 (Observando)');
+
+        function stepTuringMachine(actionSymbol) {
+            // Escribir en Cinta 1 la categoría del golpe del jugador ('A', 'D', 'C', 'E')
+            tape1[head1] = actionSymbol;
+            const prevSymbol = head1 > 0 ? tape1[head1 - 1] : null;
+            head1 = (head1 + 1) % tape1.length;
+
+            let newState = 'q0 (Observando)';
+            let enemyResponse = 'IDLE';
+
+            if (actionSymbol === 'E') {
+                // Error sintáctico -> El enemigo castiga inmediatamente
+                newState = 'q1 (Castigo por Desafinar)';
+                tape2[head2] = '!';
+                enemyResponse = 'CASTIGO';
+            } else if (prevSymbol === actionSymbol) {
+                // El cabezal detecta que el jugador repitió el mismo tipo de acción
+                newState = 'q2 (Adaptación Anti-Spam)';
+                tape2[head2] = '1';
+                head2 = (head2 + 1) % tape2.length;
+                enemyResponse = actionSymbol === 'A' ? 'BLOQUEO' : 'ROMPE_G';
+            } else if (actionSymbol === 'A') {
+                newState = 'q3 (Contraataque)';
+                enemyResponse = 'ATK_RAP';
+            } else if (actionSymbol === 'D') {
+                newState = 'q4 (Finta Llanera)';
+                enemyResponse = 'ATK_AREA';
+            } else if (actionSymbol === 'C') {
+                newState = 'q5 (Presión Agresiva)';
+                tape2[head2] = '+';
+                enemyResponse = 'EMBESTIDA';
+            }
+
+            tape3[head3] = enemyResponse;
+            head3 = (head3 + 1) % tape3.length;
+            renderTapes(newState);
+        }
+
+        // Evalúa la cadena acumulada usando las 6 reglas de CuatroLlanero.g4
+        function evaluateGrammar(tokens) {
+            const seq = tokens.join('');
+            const resultBox = document.getElementById('parser-result');
+
+            // 1. Golpe de Gabán: T D D T F
+            if (seq === 'TDDTF') {
+                return { valid: true, name: 'Golpe de Gabán (#AtaqueBasico)', tmSymbol: 'A', desc: '¡Onda acústica lanzada! (Daño: 25)' };
+            }
+            // 2. Golpe de Pajarillo: M S D M F
+            if (seq === 'MSDMF') {
+                return { valid: true, name: 'Golpe de Pajarillo (#AtaqueFuerte)', tmSymbol: 'A', desc: '¡Joropo recio en tono menor! Rompe la defensa enemiga (Daño: 45)' };
+            }
+            // 3. Seis por Derecho: T S D T F
+            if (seq === 'TSDTF') {
+                return { valid: true, name: 'Seis por Derecho (#DefensaEscudo)', tmSymbol: 'D', desc: '¡Escudo armónico activado! Bloqueas el próximo ataque del enemigo.' };
+            }
+            // 4. Zumbe y Zumbe: S D S D F
+            if (seq === 'SDSDF') {
+                return { valid: true, name: 'Zumbe y Zumbe (#DefensaAturdir)', tmSymbol: 'D', desc: '¡Síncopa llanera! El enemigo queda aturdido por 2 segundos.' };
+            }
+            // 5. Tonada de Sabana: T M S T F
+            if (seq === 'TMSTF') {
+                return { valid: true, name: 'Tonada de Sabana (#UtilidadCuracion)', tmSymbol: 'C', desc: '¡Melodía del llano! Recuperas +30 puntos de vida.' };
+            }
+            // 6. Contrapunteo Libre (Regla Recursiva): T D (S D T)+ F
+            const contrapunteoRegex = /^TD(SDT)+F$/;
+            if (contrapunteoRegex.test(seq)) {
+                const reps = (seq.length - 3) / 3;
+                return {
+                    valid: true,
+                    name: `Contrapunteo Libre x${reps} (#AtaqueRecursivo)`,
+                    tmSymbol: 'A',
+                    desc: `¡Combo recursivo validado con ${reps} repeticiones de bordoneo! (Daño crítico: ${reps * 35})`
+                };
+            }
+
+            // Si no coincide con ninguna producción de la gramática:
+            return {
+                valid: false,
+                name: 'Error Sintáctico en ANTLR4',
+                tmSymbol: 'E',
+                desc: `La cadena "${tokens.join(' → ')}" no pertenece a la gramática CuatroLlanero.g4. ¡El cuatro sonó desafinado!`
+            };
+        }
+
+        function updateStreamUI() {
+            const streamEl = document.getElementById('token-stream');
+            if (tokenBuffer.length === 0) {
+                streamEl.innerHTML = '<span style="color:var(--text-muted); font-size:0.85rem;">Toca acordes o elige una de las 6 secuencias a la derecha...</span>';
+                return;
+            }
+            streamEl.innerHTML = '';
+            tokenBuffer.forEach((t, idx) => {
+                if (idx > 0) {
+                    const arrow = document.createElement('span');
+                    arrow.className = 'stream-arrow';
+                    arrow.textContent = '→';
+                    streamEl.appendChild(arrow);
+                }
+                const pill = document.createElement('span');
+                pill.className = 'stream-pill';
+                pill.style.borderColor = CHORDS[t].color;
+                pill.style.color = CHORDS[t].color;
+                pill.textContent = t;
+                streamEl.appendChild(pill);
+            });
+        }
+
+        function resetBuffer() {
+            tokenBuffer = [];
+            updateStreamUI();
+            const resultBox = document.getElementById('parser-result');
+            resultBox.className = 'parser-result';
+            resultBox.innerHTML = 'Estado del Parser: Esperando secuencia de acordes terminada en <strong>F (Frenao)</strong>...';
+        }
+
+        // Dispara un token (acorde o frenao)
+        function triggerToken(token, fromAutoPlay = false) {
+            if (isAutoPlaying && !fromAutoPlay) return;
+            initAudio();
+
+            // Si ya había terminado una secuencia previa en 'F', empezamos una nueva automáticamente
+            if (tokenBuffer.length > 0 && tokenBuffer[tokenBuffer.length - 1] === 'F') {
+                tokenBuffer = [];
+            }
+
+            // Efecto visual en el botón
+            const btn = document.querySelector(`.token-btn[data-token="${token}"]`);
+            if (btn) {
+                btn.classList.add('active');
+                setTimeout(() => btn.classList.remove('active'), 160);
+            }
+
+            // Dibujar posiciones en el Cuatro
+            renderCuatroChord(token);
+
+            // Reproducir sonido real del acorde o el Frenao
+            if (token === 'F') {
+                playFrenaoSound();
+            } else {
+                const chord = CHORDS[token];
+                // Rasgueo rápido cuerda por cuerda (18ms entre cuerdas para sonar como un cuatro real)
+                chord.frets.forEach((fret, stringIdx) => {
+                    const freq = getFreq(stringIdx, fret);
+                    pluckString(freq, stringIdx * 0.018);
+                });
+            }
+
+            // Agregar token al buffer léxico
+            tokenBuffer.push(token);
+            updateStreamUI();
+
+            // Si el token es 'F' (EOF / Delimitador de cierre), enviamos al Parser ANTLR
+            const resultBox = document.getElementById('parser-result');
+            if (token === 'F') {
+                const res = evaluateGrammar(tokenBuffer);
+                if (res.valid) {
+                    resultBox.className = 'parser-result valid';
+                    resultBox.innerHTML = `✅ <strong>VÁLIDO: ${res.name}</strong> — ${res.desc}`;
+                } else {
+                    resultBox.className = 'parser-result invalid';
+                    resultBox.innerHTML = `❌ <strong>${res.name}:</strong> ${res.desc}`;
+                    setTimeout(() => playErrorSound(), 140);
+                }
+                stepTuringMachine(res.tmSymbol);
+            } else {
+                resultBox.className = 'parser-result';
+                resultBox.innerHTML = `Analizando tokens... Presiona <strong>F (Espacio)</strong> para cerrar y validar la secuencia.`;
+            }
+        }
+
+        // Reproductor automático de una secuencia con cadencia de joropo
+        function playSequence(tokensArray, cardId) {
+            if (isAutoPlaying) return;
+            isAutoPlaying = true;
+            resetBuffer();
+
+            document.querySelectorAll('.seq-card').forEach(c => c.classList.remove('playing'));
+            document.querySelectorAll('.play-seq-btn').forEach(b => b.disabled = true);
+
+            const card = document.getElementById(cardId);
+            if (card) card.classList.add('playing');
+
+            // Cadencia rítmica en milisegundos (compás de joropo)
+            const stepDelay = 360;
+
+            tokensArray.forEach((tok, idx) => {
+                setTimeout(() => {
+                    triggerToken(tok, true);
+                    if (idx === tokensArray.length - 1) {
+                        setTimeout(() => {
+                            isAutoPlaying = false;
+                            if (card) card.classList.remove('playing');
+                            document.querySelectorAll('.play-seq-btn').forEach(b => b.disabled = false);
+                        }, 400);
+                    }
+                }, idx * stepDelay);
+            });
+        }
+
+        // Captura de teclado para tocar en vivo
+        window.addEventListener('keydown', (e) => {
+            if (e.repeat) return;
+            const key = e.key.toLowerCase();
+            if (key === 'a' || key === 'j') {
+                triggerToken('T');
+            } else if (key === 's' || key === 'k') {
+                triggerToken('S');
+            } else if (key === 'd' || key === 'l') {
+                triggerToken('D');
+            } else if (key === 'w' || key === 'u') {
+                triggerToken('M');
+            } else if (e.code === 'Space') {
+                e.preventDefault();
+                triggerToken('F');
+            }
+        });
+    </script>
+</body>
+</html>
