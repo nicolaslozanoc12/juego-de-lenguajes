@@ -1,0 +1,24 @@
+[gd_scene format=3 uid="uid://combatarena001"]
+
+[node name="CombatArena" type="Node2D"]
+
+[node name="Camera2D" type="Camera2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="FondoColor" type="ColorRect" parent="."]
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.0941176, 0.117647, 0.156863, 1)
+
+[node name="IsometricGround" type="Node2D" parent="."]
+position = Vector2(640, 360)
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="Titulo" type="Label" parent="UI"]
+offset_left = 30.0
+offset_top = 25.0
+offset_right = 600.0
+offset_bottom = 60.0
+theme_override_font_sizes/font_size = 22
+text = "🎸 El Cuatro Llanero - Combate Isométrico"

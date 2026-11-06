@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="128" height="128" viewBox="0 0 128 128">
+  <rect width="128" height="128" rx="24" fill="#1e293b"/>
+  <!-- Silueta de un cuatro llanero estilizado -->
+  <path d="M 64 20 L 64 60 M 56 60 Q 40 70 42 94 Q 45 112 64 112 Q 83 112 86 94 Q 88 70 72 60 Z" fill="#e6a145" stroke="#f59e0b" stroke-width="4"/>
+  <circle cx="64" cy="85" r="10" fill="#1e293b"/>
+  <!-- Clavijero -->
+  <rect x="58" y="14" width="12" height="16" rx="3" fill="#d97706"/>
+</svg>

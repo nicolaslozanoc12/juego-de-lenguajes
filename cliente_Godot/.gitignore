@@ -1,0 +1,8 @@
+# Godot 4+ cache and editor files
+.godot/
+*.translation
+
+# Mono / C# if ever used
+.mono/
+[Bb]in/
+[Oo]bj/
