@@ -1,0 +1,33 @@
+# Configuración local de VS Code / IDEs
+proyecto.code-workspace
+.vscode/*
+!.vscode/settings.json
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
+.idea/
+
+# Sistema Operativo
+Thumbs.db
+Desktop.ini
+.DS_Store
+
+# Servidor Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.env
+.venv/
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+.pytest_cache/
+
+# Cliente Godot (respaldo por si no se lee el interno)
+.godot/
+*.translation
+.mono/
