@@ -1,61 +1,64 @@
-# Diseño de Mecánica: Arena de Combate contra Jefes y Muro Espectral
+# Diseño de Mecánica: Arena de Combate contra Jefes (Vista Top-Down 2D)
 
-Este documento describe la mecánica de transición entre la exploración del mundo y el enfrentamiento contra jefes míticos (ej. *El Silbón*, *La Sayona*), así como el confinamiento del combate en la escena `CombatArena`.
+Este documento define la estructura visual, la cámara y el confinamiento del combate en la escena `CombatArena`, basado en el diseño conceptual del juego.
 
 ---
 
-## 1. Contexto de Exploración vs. Combate
+## 1. Boceto Conceptual de la Escena de Combate
+
+A continuación se muestra el boceto original de la distribución del escenario y la cámara:
+
+![Boceto de la Escena de Combate](../fotos/bosquejo_scena_pelea.jpeg)
+
+### Elementos clave identificados en el boceto:
+
+1. **Perspectiva Top-Down 2D (No isométrica):**
+   - Vista superior ortogonal (estilo *Vampire Survivors* / *Enter the Gungeon*).
+   - Los personajes y obstáculos se dibujan de frente/perfil en baldosas cuadradas (sin rombos ni ángulos diagonales complejos), lo que simplifica enormemente la animación en Aseprite.
+2. **Franja Superior de Ambientación (Cielo Llanero):**
+   - En la parte superior de la pantalla se observa el horizonte nocturno con la **luna y nubes de sabana**, aportando atmósfera de leyenda y misterio.
+3. **El Ruedo de Combate (Terreno Delimitado):**
+   - Un área rectangular amplia donde el **Llanero con su cuatro** (abajo a la izquierda) y el **Jefe/Espanto** (en el centro) tienen espacio para maniobrar y enfrentarse.
+   - Obstáculos naturales en el terreno (rocas/matas de sabana) que sirven de cobertura o limitan el paso.
+
+---
+
+## 2. Transición: Exploración vs. Combate contra el Jefe
 
 ```mermaid
 flowchart LR
-    A["Exploración Libre\n(Cámara estilo Vampire Survivors)"] -->|"Encuentro con Jefe"| B["Activación de Arena\n(Bloqueo de Cámara)"]
-    B --> C["Aparición de Muro Mágico\n(Cerco Espectral)"]
+    A["Exploración Libre\n(Cámara móvil estilo Vampire Survivors)"] -->|"Encuentro con Jefe"| B["Activación de Arena\n(Bloqueo de Cámara 16:9)"]
+    B --> C["Aparición de Muro Mágico\n(Cerco Espectral de Sabana)"]
     C -->|"Derrotar al Jefe"| D["Apertura del Muro &\nRetorno a Exploración"]
 ```
 
-1. **Modo Exploración (Estilo *Vampire Survivors*):**
-   - El llanero se desplaza libremente por la sabana llanera con una cámara que lo sigue suavemente.
-2. **Modo Encuentro con Jefe (*Boss Fight Arena*):**
-   - Al entrar en el radio de detección de un jefe mítico, se dispara el evento de combate.
-   - **Bloqueo de Cámara (*Camera Lock-in*):** La cámara se desacopla del seguimiento libre del jugador y se fija en el centro del terreno de combate delimitado, mostrando tanto al llanero como al jefe en pantalla en todo momento.
+1. **Modo Exploración Libre:**
+   - El llanero camina en 4 u 8 direcciones por la sabana infinita; la cámara lo sigue suavemente.
+2. **Modo Arena de Combate (*Camera Lock-in*):**
+   - Al encontrar al jefe (ej. *El Silbón*, *El Espanto*), la cámara se ancla al rectángulo de combate (1280×720).
+   - Se levanta el **Muro Mágico / Cerco Espectral** en el perímetro.
 
 ---
 
-## 2. El Muro Mágico / Cerco Espectral
+## 3. El Muro Mágico / Cerco Espectral
 
-Para dar coherencia narrativa y justificar por qué el jugador no puede simplemente huir del combate, se manifiesta una barrera mística del folclore llanero (niebla de espantos, cerco de fuego fatuo o silbidos espectrales).
+El borde del rectángulo actúa como una barrera mística del folclore llanero:
 
-### Reglas y Comportamiento del Muro:
-
-| Propiedad | Comportamiento en Juego | Justificación de Diseño |
-| :--- | :--- | :--- |
-| **Barrera Infranqueable** | No permite que el llanero ni el enemigo atraviesen el límite del escenario. | Evita que el combate se desplace fuera del alcance de la cámara fija y del HUD. |
-| **Daño por Contacto** | Si el jugador toca el borde del muro mágico, recibe **daño por segundo continuo** (ej. 5 de daño por tick) o sufre un **empuje hacia el centro (*Knockback*)**. | Evita la táctica de quedarse "campeando" en los bordes de la pantalla. Obliga al jugador a mantenerse en el centro de la arena mientras ejecuta las secuencias del cuatro. |
-| **Visuales y Audio** | Partículas de fuego fatuo / niebla morada en el perímetro y un zumbido místico cuando el jugador se aproxima. | Telegrafía claramente el peligro de acercarse al borde. |
+| Propiedad | Comportamiento en Juego |
+| :--- | :--- |
+| **Colisión Infranqueable** | No permite salir de la arena mientras el jefe esté vivo. |
+| **Penalización por Contacto** | Si el llanero toca el borde del muro, recibe daño por segundo y sufre un empuje (*knockback*) hacia el centro, obligándolo a mantenerse en el ruedo tocando el cuatro. |
+| **Desactivación** | Cuando la Máquina de Turing en el servidor determine la victoria (vida del jefe en `0`), el muro desaparece y la cámara vuelve a seguir al llanero libremente. |
 
 ---
 
-## 3. Condiciones de Desactivación
+## 4. Estructura de la Escena en Godot 4 (`CombatArena.tscn`)
 
-El confinamiento de la arena termina bajo dos únicas condiciones:
+Con la vista Top-Down 2D, la escena se compone de:
 
-1. **Victoria:** La Máquina de Turing en el servidor registra que la vida del jefe llegó a `0`. El muro mágico se disuelve con una animación de luz, la cámara vuelve a seguir al llanero libremente y se desbloquea el avance en el mapa.
-2. **Derrota:** La vida del llanero llega a `0`. Se activa la pantalla de reintento (*Game Over* / Reaparición en el último hato o fogón).
-
----
-
-## 4. Guía de Implementación Técnica en Godot 4 (`CombatArena.tscn`)
-
-1. **Límites de Cámara:**
-   - En el nodo `Camera2D`, configurar los límites (`limit_left`, `limit_top`, `limit_right`, `limit_bottom`) coincidentes con el tamaño de la arena (ej. 1280x720).
-2. **Perímetro de Daño (`MuroMagicoArea2D`):**
-   - Un nodo `Area2D` con 4 colisiones rectangulares (`CollisionShape2D`) en los cuatro bordes de la pantalla.
-   - Script conectado a la señal `body_entered(body)`:
-     ```gdscript
-     func _on_muro_magico_body_entered(body: Node2D) -> void:
-         if body.is_in_group("player"):
-             body.recibir_dano(5, "quema_espectral")
-             body.aplicar_empuje_hacia_centro()
-     ```
-3. **Efecto Visual:**
-   - Un `GPUParticles2D` o un shader de distorsión en los bordes que se enciende cuando la variable `jefe_activo == true`.
+* **`FondoCielo`:** Textura fija en la parte superior con la noche y la luna.
+* **`TileMapLayer` (Ortogonal 2D):** Baldosas cuadradas planas (32×32 px) de pasto seco, tierra y camino de sabana.
+* **`Obstaculos`:** Rocas y vegetación con colisión (`StaticBody2D`).
+* **`Llanero` (`CharacterBody2D`):** Movimiento en 4 direcciones con `W, A, S, D` y ejecución de acordes con `J, K, L, I + Espacio`.
+* **`JefeEspanto` (`CharacterBody2D`):** Posicionado en el centro, controlado por las decisiones de la Máquina de Turing.
+* **`MuroMagicoArea2D`:** Borde rectangular con detector de colisión que inflige daño al contacto.
