@@ -41,3 +41,6 @@ curl.exe -X POST http://127.0.0.1:8766/reset
 
 Las rutas y sus cuerpos JSON están documentados en
 [contracts/README.md](contracts/README.md).
+
+La representación JFLAP de la máquina de decisión del enemigo está en
+[backend/turing_jff/](backend/turing_jff/).

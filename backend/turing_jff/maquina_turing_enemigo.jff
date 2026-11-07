@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<structure>
+  <type>turing</type>
+  <tapes>3</tapes>
+  <automaton>
+    <state id="0" name="qInicio">
+      <x>80.0</x>
+      <y>300.0</y>
+      <initial/>
+    </state>
+    <state id="1" name="qAtaqueRapido">
+      <x>360.0</x>
+      <y>80.0</y>
+      <final/>
+    </state>
+    <state id="2" name="qAtaquePesado">
+      <x>360.0</x>
+      <y>200.0</y>
+      <final/>
+    </state>
+    <state id="3" name="qBloqueo">
+      <x>360.0</x>
+      <y>320.0</y>
+      <final/>
+    </state>
+    <state id="4" name="qCastigo">
+      <x>360.0</x>
+      <y>440.0</y>
+      <final/>
+    </state>
+
+    <!-- A: furia nueva = min(furia + 1, 3) -->
+    <transition><from>0</from><to>1</to><read tape="1">A</read><read tape="2">0</read><read tape="3"></read><write tape="1">A</write><write tape="2">1</write><write tape="3">R</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>2</to><read tape="1">A</read><read tape="2">1</read><read tape="3"></read><write tape="1">A</write><write tape="2">2</write><write tape="3">P</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>2</to><read tape="1">A</read><read tape="2">2</read><read tape="3"></read><write tape="1">A</write><write tape="2">3</write><write tape="3">P</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>2</to><read tape="1">A</read><read tape="2">3</read><read tape="3"></read><write tape="1">A</write><write tape="2">3</write><write tape="3">P</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+
+    <!-- D: furia nueva = max(furia - 1, 0), siempre bloquea -->
+    <transition><from>0</from><to>3</to><read tape="1">D</read><read tape="2">0</read><read tape="3"></read><write tape="1">D</write><write tape="2">0</write><write tape="3">B</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>3</to><read tape="1">D</read><read tape="2">1</read><read tape="3"></read><write tape="1">D</write><write tape="2">0</write><write tape="3">B</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>3</to><read tape="1">D</read><read tape="2">2</read><read tape="3"></read><write tape="1">D</write><write tape="2">1</write><write tape="3">B</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>3</to><read tape="1">D</read><read tape="2">3</read><read tape="3"></read><write tape="1">D</write><write tape="2">2</write><write tape="3">B</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+
+    <!-- C: furia nueva = max(furia - 1, 0) -->
+    <transition><from>0</from><to>1</to><read tape="1">C</read><read tape="2">0</read><read tape="3"></read><write tape="1">C</write><write tape="2">0</write><write tape="3">R</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>1</to><read tape="1">C</read><read tape="2">1</read><read tape="3"></read><write tape="1">C</write><write tape="2">0</write><write tape="3">R</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>2</to><read tape="1">C</read><read tape="2">2</read><read tape="3"></read><write tape="1">C</write><write tape="2">1</write><write tape="3">P</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>2</to><read tape="1">C</read><read tape="2">3</read><read tape="3"></read><write tape="1">C</write><write tape="2">2</write><write tape="3">P</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+
+    <!-- E: furia nueva = min(furia + 2, 3), siempre castiga -->
+    <transition><from>0</from><to>4</to><read tape="1">E</read><read tape="2">0</read><read tape="3"></read><write tape="1">E</write><write tape="2">2</write><write tape="3">C</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>4</to><read tape="1">E</read><read tape="2">1</read><read tape="3"></read><write tape="1">E</write><write tape="2">3</write><write tape="3">C</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>4</to><read tape="1">E</read><read tape="2">2</read><read tape="3"></read><write tape="1">E</write><write tape="2">3</write><write tape="3">C</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+    <transition><from>0</from><to>4</to><read tape="1">E</read><read tape="2">3</read><read tape="3"></read><write tape="1">E</write><write tape="2">3</write><write tape="3">C</write><move tape="1">R</move><move tape="2">S</move><move tape="3">R</move></transition>
+  </automaton>
+</structure>
