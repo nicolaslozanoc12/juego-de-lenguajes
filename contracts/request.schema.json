@@ -1,0 +1,21 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "$id": "https://juego-de-lenguajes.local/contracts/request.schema.json",
+  "title": "Peticion de turno",
+  "description": "Mensaje JSON que Godot envia al servidor al cerrar una secuencia.",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["secuencia"],
+  "properties": {
+    "secuencia": {
+      "type": "string",
+      "minLength": 1,
+      "pattern": "^[TSDMF \t\r\n]+$",
+      "description": "Tokens T, S, D, M y F. Se permiten espacios como define WS en la gramatica."
+    }
+  },
+  "examples": [
+    { "secuencia": "TDDTF" },
+    { "secuencia": "TDSDTSDTF" }
+  ]
+}
