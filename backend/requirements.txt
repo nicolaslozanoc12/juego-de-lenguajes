@@ -1,0 +1,2 @@
+# Optional ANTLR runtime for regenerating a parser from CuatroLlanero.g4.
+antlr4-python3-runtime>=4.13,<5
