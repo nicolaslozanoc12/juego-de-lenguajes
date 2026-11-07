@@ -1,24 +1,73 @@
-[gd_scene format=3 uid="uid://combatarena001"]
+[gd_scene load_steps=6 format=3 uid="uid://combatarena001"]
+
+[ext_resource type="Script" path="res://scripts/combat/CombatArena.gd" id="1_arena"]
+[ext_resource type="Texture2D" path="res://assets/sprites/cielo_nocturno.png" id="2_cielo"]
+[ext_resource type="Texture2D" path="res://assets/sprites/llanero.png" id="3_llanero"]
+[ext_resource type="Texture2D" path="res://assets/sprites/demonio_espanto.png" id="4_demonio"]
+[ext_resource type="Script" path="res://scripts/combat/Llanero.gd" id="5_llanero_script"]
+
+[sub_resource type="CircleShape2D" id="CircleShape2D_llanero"]
+radius = 22.0
 
 [node name="CombatArena" type="Node2D"]
+script = ExtResource("1_arena")
 
 [node name="Camera2D" type="Camera2D" parent="."]
 position = Vector2(640, 360)
+limit_left = 0
+limit_top = 0
+limit_right = 1280
+limit_bottom = 720
 
-[node name="FondoColor" type="ColorRect" parent="."]
-offset_right = 1280.0
-offset_bottom = 720.0
-color = Color(0.0941176, 0.117647, 0.156863, 1)
+[node name="CieloNocturno" type="Sprite2D" parent="."]
+position = Vector2(0, 0)
+scale = Vector2(4, 3.2)
+texture = ExtResource("2_cielo")
+centered = false
 
-[node name="IsometricGround" type="Node2D" parent="."]
-position = Vector2(640, 360)
+[node name="TerrenoSabana" type="Node2D" parent="."]
+
+[node name="MuroMagicoVisual" type="ReferenceRect" parent="."]
+offset_left = 80.0
+offset_top = 208.0
+offset_right = 1200.0
+offset_bottom = 688.0
+border_color = Color(0.66, 0.33, 0.97, 0.85)
+border_width = 4.0
+editor_only = false
+
+[node name="DemonioEspanto" type="Node2D" parent="."]
+position = Vector2(640, 390)
+
+[node name="Sprite2D" type="Sprite2D" parent="DemonioEspanto"]
+scale = Vector2(3.5, 3.5)
+texture = ExtResource("4_demonio")
+
+[node name="Llanero" type="CharacterBody2D" parent="."]
+position = Vector2(360, 540)
+script = ExtResource("5_llanero_script")
+
+[node name="Sprite2D" type="Sprite2D" parent="Llanero"]
+scale = Vector2(3, 3)
+texture = ExtResource("3_llanero")
+
+[node name="CollisionShape2D" type="CollisionShape2D" parent="Llanero"]
+shape = SubResource("CircleShape2D_llanero")
 
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="Titulo" type="Label" parent="UI"]
-offset_left = 30.0
-offset_top = 25.0
-offset_right = 600.0
-offset_bottom = 60.0
-theme_override_font_sizes/font_size = 22
-text = "🎸 El Cuatro Llanero - Combate Isométrico"
+offset_left = 24.0
+offset_top = 14.0
+offset_right = 760.0
+offset_bottom = 48.0
+theme_override_font_sizes/font_size = 20
+text = "🎸 El Cuatro Llanero vs. El Espanto de la Sabana (WASD para moverse)"
+
+[node name="LabelEstado" type="Label" parent="UI"]
+offset_left = 24.0
+offset_top = 688.0
+offset_right = 900.0
+offset_bottom = 716.0
+theme_override_font_sizes/font_size = 16
+text = "Cerca Espectral Activa: No salgas del borde morado | Vida Llanero: 100"

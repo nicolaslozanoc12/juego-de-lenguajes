@@ -33,7 +33,7 @@ flowchart LR
 ```
 
 1. **Modo Exploración Libre:**
-   - El llanero camina en 4 u 8 direcciones por la sabana infinita; la cámara lo sigue suavemente.
+   - El llanero camina en 8 direcciones por la sabana infinita; la cámara lo sigue suavemente.
 2. **Modo Arena de Combate (*Camera Lock-in*):**
    - Al encontrar al jefe (ej. *El Silbón*, *El Espanto*), la cámara se ancla al rectángulo de combate (1280×720).
    - Se levanta el **Muro Mágico / Cerco Espectral** en el perímetro.
@@ -56,7 +56,7 @@ El borde del rectángulo actúa como una barrera mística del folclore llanero:
 
 Con la vista Top-Down 2D, la escena se compone de:
 
-* **`FondoCielo`:** Textura fija en la parte superior con la noche y la luna.
+* **`FondoCielo`:** Textura fija en la parte superior con la noche y la luna.(la nubes e mueven hacia un lado)
 * **`TileMapLayer` (Ortogonal 2D):** Baldosas cuadradas planas (32×32 px) de pasto seco, tierra y camino de sabana.
 * **`Obstaculos`:** Rocas y vegetación con colisión (`StaticBody2D`).
 * **`Llanero` (`CharacterBody2D`):** Movimiento en 4 direcciones con `W, A, S, D` y ejecución de acordes con `J, K, L, I + Espacio`.
