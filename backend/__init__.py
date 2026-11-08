@@ -1,8 +1,8 @@
 """Backend del juego de cuatro llanero."""
 
-from .combat import CombatController
-from .parser import ParseResult, validar_secuencia
-from .turing import MultiTapeTuringMachine
+from .formal.grammar.parser import ParseResult, validar_secuencia
+from .formal.turing.turing import MultiTapeTuringMachine
+from .game.combat import CombatController
 
 __all__ = [
     "CombatController",

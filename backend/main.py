@@ -1,4 +1,4 @@
-from .server import serve
+from backend.network.server import serve
 
 
 if __name__ == "__main__":

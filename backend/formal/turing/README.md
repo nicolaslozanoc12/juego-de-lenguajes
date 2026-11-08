@@ -2,7 +2,7 @@
 
 El archivo [maquina_turing_enemigo.jff](./maquina_turing_enemigo.jff) permite
 probar en JFLAP la transición de un turno de la máquina implementada en
-[`backend/turing.py`](../turing.py).
+[`turing.py`](./turing.py).
 
 ## Cintas
 
