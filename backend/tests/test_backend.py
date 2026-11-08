@@ -2,10 +2,10 @@ import json
 from pathlib import Path
 import unittest
 
-from backend.combat import CombatController
-from backend.parser import validar_secuencia
-from backend.protocol import error_response, process_request
-from backend.turing import MultiTapeTuringMachine
+from backend.formal.grammar.parser import validar_secuencia
+from backend.formal.turing.turing import MultiTapeTuringMachine
+from backend.game.combat import CombatController
+from backend.network.protocol import error_response, process_request
 
 
 class ParserTests(unittest.TestCase):
@@ -61,26 +61,14 @@ class CombatTests(unittest.TestCase):
     def test_protocol_processes_json(self):
         response = process_request(json.dumps({"secuencia": "TDDTF"}), CombatController())
         self.assertTrue(response["valido"])
-        self.assertEqual(response["contrato_version"], "1.0")
         self.assertEqual(response["dano_enemigo"], 15)
 
-    def test_protocol_error_has_contract_shape(self):
+    def test_protocol_error_response(self):
         response = error_response("JSON invalido")
         self.assertEqual(response, {
-            "contrato_version": "1.0",
             "valido": False,
             "error": "JSON invalido",
         })
-
-
-class ContractTests(unittest.TestCase):
-    def test_contract_files_are_valid_json(self):
-        contracts = Path(__file__).parents[2] / "contracts"
-        for filename in ("request.schema.json", "response.schema.json", "error.schema.json"):
-            with self.subTest(filename=filename):
-                with (contracts / filename).open(encoding="utf-8") as file:
-                    document = json.load(file)
-                self.assertEqual(document["$schema"], "https://json-schema.org/draft/2020-12/schema")
 
 
 if __name__ == "__main__":

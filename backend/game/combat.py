@@ -1,10 +1,10 @@
-"""Resolucion de turnos entre el llanero y el enemigo."""
+"""Resolución de turnos entre el llanero y el enemigo."""
 
 from dataclasses import dataclass
 from typing import Any, Dict
 
-from .parser import ParseResult, validar_secuencia
-from .turing import MultiTapeTuringMachine, TuringStep
+from backend.formal.grammar.parser import ParseResult, validar_secuencia
+from backend.formal.turing.turing import MultiTapeTuringMachine, TuringStep
 
 
 @dataclass

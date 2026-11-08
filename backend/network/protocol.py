@@ -1,29 +1,26 @@
-"""Procesamiento de mensajes JSON del servidor."""
+"""Procesamiento y serialización de mensajes JSON del servidor."""
 
 import json
 from typing import Any, Dict
 
-from .combat import CombatController
-
-CONTRACT_VERSION = "1.0"
+from backend.game.combat import CombatController
 
 
 def process_request(payload: str, controller: CombatController) -> Dict[str, Any]:
     try:
         request = json.loads(payload)
     except json.JSONDecodeError as exc:
-        raise ValueError("JSON invalido") from exc
+        raise ValueError("JSON inválido") from exc
     if not isinstance(request, dict):
-        raise ValueError("La peticion debe ser un objeto JSON")
+        raise ValueError("La petición debe ser un objeto JSON")
     if "secuencia" not in request or not isinstance(request["secuencia"], str):
-        raise ValueError("La peticion requiere el campo secuencia como texto")
+        raise ValueError("La petición requiere el campo secuencia como texto")
     response = controller.process(request["secuencia"])
-    return {"contrato_version": CONTRACT_VERSION, **response}
+    return response
 
 
 def error_response(message: str) -> Dict[str, Any]:
     return {
-        "contrato_version": CONTRACT_VERSION,
         "valido": False,
         "error": message,
     }
