@@ -139,6 +139,16 @@ El servidor procesa el turno y devuelve inmediatamente una sola línea JSON con 
 | `cintas` | `object` | Ver sección 6 | Contenido de las 3 cintas de la Máquina de Turing para el HUD |
 | `cabezales` | `object` | `{"L": int, "R": 0, "S": int}` | Posición actual de los cabezales en cada cinta |
 
+### Resolución del turno
+
+El controlador combina la acción validada del jugador con la decisión de la
+Máquina de Turing. `Seis por Derecho` (`D`) anula el daño entrante como parry;
+un error sintáctico (`E`) siempre recibe el daño crítico de `35`, y los ataques
+enemigos ordinarios infligen `10` (`ATAQUE_RAPIDO`) o `20`
+(`ATAQUE_PESADO`). El daño no puede reducir las vidas por debajo de cero. El
+estado de respuesta es `VICTORIA` si la vida enemiga llega a cero, `DERROTA` si
+la del jugador llega a cero, y `JUGANDO` en caso contrario.
+
 ---
 
 ## 6. Estructura de las Cintas de Turing (Para el HUD visual)

@@ -64,6 +64,8 @@ class CombatController:
 
     @staticmethod
     def _dano_del_enemigo(step: TuringStep, accion: str) -> int:
+        if accion == "E":
+            return 35
         if accion == "D":
             return 0
         return {"ATAQUE_RAPIDO": 10, "ATAQUE_PESADO": 20, "CASTIGO": 35}.get(step.decision, 0)

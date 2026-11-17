@@ -3,9 +3,9 @@ from pathlib import Path
 import unittest
 
 from backend.formal.grammar.parser import validar_secuencia
-from backend.formal.turing.turing import MultiTapeTuringMachine
-from backend.game.combat import CombatController
-from backend.network.protocol import error_response, process_request
+from backend.formal.turing.turing import MultiTapeTuringMachine, TuringStep
+from backend.game.combat import CombatController, CombatState
+from backend.network.protocol import encode_response, error_response, process_request
 
 
 class ParserTests(unittest.TestCase):
@@ -57,11 +57,63 @@ class CombatTests(unittest.TestCase):
         self.assertEqual(response["cintas"]["cinta1"], ["E"])
         self.assertEqual(response["enemigo_accion"], "CASTIGO")
         self.assertEqual(response["dano_jugador"], 35)
+        self.assertEqual(response["vida_jugador"], 65)
 
     def test_protocol_processes_json(self):
         response = process_request(json.dumps({"secuencia": "TDDTF"}), CombatController())
         self.assertTrue(response["valido"])
         self.assertEqual(response["dano_enemigo"], 15)
+
+    def test_controller_returns_godot_json_snapshot(self):
+        response = CombatController().process("TDDTF")
+        expected_fields = {
+            "valido",
+            "golpe",
+            "accion",
+            "error",
+            "dano_enemigo",
+            "dano_jugador",
+            "enemigo_accion",
+            "vida_jugador",
+            "vida_enemigo",
+            "estado",
+            "cintas",
+            "cabezales",
+        }
+
+        self.assertIsInstance(response, dict)
+        self.assertEqual(set(response), expected_fields)
+        self.assertEqual(json.loads(encode_response(response)), response)
+
+    def test_defense_parries_every_enemy_attack(self):
+        for decision in ("ATAQUE_RAPIDO", "ATAQUE_PESADO", "CASTIGO"):
+            with self.subTest(decision=decision):
+                step = TuringStep({}, {}, decision)
+                self.assertEqual(CombatController._dano_del_enemigo(step, "D"), 0)
+
+    def test_syntax_error_always_causes_critical_damage(self):
+        step = TuringStep({}, {}, "ATAQUE_RAPIDO")
+        self.assertEqual(CombatController._dano_del_enemigo(step, "E"), 35)
+
+    def test_response_is_json_serializable_and_reports_victory(self):
+        controller = CombatController()
+        controller.state.vida_enemigo = 15
+
+        response = controller.process("TDDTF")
+
+        self.assertEqual(response["estado"], "VICTORIA")
+        self.assertEqual(response["vida_enemigo"], 0)
+        self.assertEqual(response["dano_jugador"], 0)
+        self.assertEqual(json.loads(json.dumps(response)), response)
+
+    def test_critical_damage_reports_defeat(self):
+        controller = CombatController()
+        controller.state = CombatState(vida_jugador=20)
+
+        response = controller.process("TTDF")
+
+        self.assertEqual(response["estado"], "DERROTA")
+        self.assertEqual(response["vida_jugador"], 0)
 
     def test_protocol_error_response(self):
         response = error_response("JSON invalido")
