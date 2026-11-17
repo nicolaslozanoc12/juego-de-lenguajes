@@ -1,29 +1,79 @@
-"""Maquina de Turing multicinta para la decision tactica del enemigo."""
+"""Máquina de Turing multicinta determinista para la decisión táctica del enemigo."""
 
 from dataclasses import dataclass
-from typing import Dict, List
+import logging
+from typing import Dict, List, Tuple
+
+LOGGER = logging.getLogger(__name__)
+
+_FURIA_DELTA: Dict[str, int] = {
+    "A": 1,
+    "D": -1,
+    "C": -1,
+    "E": 2,
+}
+
+_DECISION_POR_ESTADO: Dict[str, str] = {
+    "qAtaqueRapido": "ATAQUE_RAPIDO",
+    "qAtaquePesado": "ATAQUE_PESADO",
+    "qBloqueo": "BLOQUEO",
+    "qCastigo": "CASTIGO",
+}
 
 
 @dataclass(frozen=True)
 class TuringStep:
+    """Snapshot de las tres cintas, cabezales y decisión táctica tras un paso."""
+
     cintas: Dict[str, List[str]]
     cabezales: Dict[str, int]
     decision: str
 
 
-class MultiTapeTuringMachine:
-    """Modelo determinista de tres cintas con cabezales L, R y S.
+def _format_tape(tape: List[str], head: int) -> str:
+    """Formatea una cinta resaltando entre corchetes la celda bajo el cabezal."""
+    if not tape:
+        return "[_]"
+    return " ".join(f"[{cell}]" if idx == head else cell for idx, cell in enumerate(tape))
 
-    Cinta 1 conserva las acciones del jugador, cinta 2 conserva furia y
-    repeticion, y cinta 3 conserva la decision tactica de cada turno.
+
+def _transicion_delta(
+    accion: str,
+    prev_accion: str,
+    furia_actual: int,
+    rep_actual: int,
+) -> Tuple[str, int, int, str]:
+    """Función de transición determinista δ: retorna (estado, furia, repetición, decisión)."""
+    repeticion = min(rep_actual + 1, 3) if accion == prev_accion else 1
+    furia = max(0, min(furia_actual + _FURIA_DELTA[accion], 3))
+
+    if accion == "E" or repeticion >= 3:
+        siguiente_estado = "qCastigo"
+    elif accion == "D":
+        siguiente_estado = "qBloqueo"
+    elif furia >= 2:
+        siguiente_estado = "qAtaquePesado"
+    else:
+        siguiente_estado = "qAtaqueRapido"
+
+    return siguiente_estado, furia, repeticion, _DECISION_POR_ESTADO[siguiente_estado]
+
+
+class MultiTapeTuringMachine:
+    """Autómata determinista de tres cintas con estados explícitos y cabezales L, R y S.
+
+    - Cinta 1 (cabezal ``L``): historial de acciones validadas del jugador (A, D, C, E).
+    - Cinta 2 (cabezal ``R``): memoria interna ``[furia, repeticion]`` entre ``0`` y ``3``.
+    - Cinta 3 (cabezal ``S``): historial de decisiones tácticas del enemigo.
     """
 
     def __init__(self) -> None:
+        self.estado: str = "qObservacion"
         self.tape1: List[str] = []
         self.tape2: List[str] = ["0", "0"]
         self.tape3: List[str] = []
-        self.heads = {"L": 0, "R": 0, "S": 0}
-        self._last_action = ""
+        self.heads: Dict[str, int] = {"L": 0, "R": 0, "S": 0}
+        self.ultima_transicion: str = ""
 
     @property
     def furia(self) -> int:
@@ -34,32 +84,25 @@ class MultiTapeTuringMachine:
         return int(self.tape2[1])
 
     def step(self, accion_jugador: str) -> TuringStep:
-        if accion_jugador not in {"A", "D", "C", "E"}:
+        """Lee las cintas actuales, aplica δ y avanza los cabezales para un turno."""
+        if accion_jugador not in _FURIA_DELTA:
             raise ValueError("accion_jugador debe ser A, D, C o E")
 
+        prev_accion = self.tape1[self.heads["L"]] if self.tape1 else ""
+        furia_actual = int(self.tape2[self.heads["R"]])
+        rep_actual = int(self.tape2[1])
+
+        estado_previo = self.estado
+        nuevo_estado, furia, repeticion, decision = _transicion_delta(
+            accion_jugador,
+            prev_accion,
+            furia_actual,
+            rep_actual,
+        )
+
+        mov1 = "R" if self.tape1 else "S"
+        mov3 = "R" if self.tape3 else "S"
         self.tape1.append(accion_jugador)
-        if accion_jugador == self._last_action:
-            repeticion = min(self.repeticion + 1, 3)
-        else:
-            repeticion = 1
-        if accion_jugador == "E":
-            furia = min(self.furia + 2, 3)
-        elif accion_jugador == "A":
-            furia = min(self.furia + 1, 3)
-        else:
-            furia = max(self.furia - 1, 0)
-
-        if accion_jugador == "E":
-            decision = "CASTIGO"
-        elif repeticion >= 3:
-            decision = "CASTIGO"
-        elif accion_jugador == "D":
-            decision = "BLOQUEO"
-        elif furia >= 2:
-            decision = "ATAQUE_PESADO"
-        else:
-            decision = "ATAQUE_RAPIDO"
-
         self.tape2 = [str(furia), str(repeticion)]
         self.tape3.append(decision)
         self.heads = {
@@ -67,8 +110,30 @@ class MultiTapeTuringMachine:
             "R": 0,
             "S": len(self.tape3) - 1,
         }
-        self._last_action = accion_jugador
+        self.estado = nuevo_estado
+        self.ultima_transicion = (
+            f"δ({estado_previo}, ({prev_accion or '_'}, {furia_actual}|{rep_actual}, _), "
+            f"in='{accion_jugador}') -> ({nuevo_estado}, ({accion_jugador}, "
+            f"{furia}|{repeticion}, {decision}), mov=({mov1}, R->L, {mov3}))"
+        )
+        LOGGER.info("\n%s", self.format_trace())
         return self.snapshot(decision)
+
+    def format_trace(self) -> str:
+        """Genera una vista legible de δ, los cabezales y las tres cintas."""
+        lineas = [
+            "=== Máquina de Turing Multicinta ===",
+            f"Estado actual: {self.estado}",
+        ]
+        if self.ultima_transicion:
+            lineas.append(f"Transición   : {self.ultima_transicion}")
+        lineas.extend([
+            f"Cinta 1 [cab L={self.heads['L']}]: {_format_tape(self.tape1, self.heads['L'])}",
+            f"Cinta 2 [cab R={self.heads['R']}]: {_format_tape(self.tape2, self.heads['R'])}",
+            f"Cinta 3 [cab S={self.heads['S']}]: {_format_tape(self.tape3, self.heads['S'])}",
+            "====================================",
+        ])
+        return "\n".join(lineas)
 
     def snapshot(self, decision: str = "") -> TuringStep:
         return TuringStep(
