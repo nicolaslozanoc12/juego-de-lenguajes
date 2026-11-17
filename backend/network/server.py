@@ -14,17 +14,17 @@ class _RequestHandler(socketserver.StreamRequestHandler):
         controller: CombatController = self.server.controller  # type: ignore[attr-defined]
         try:
             for raw_line in self.rfile:
-                line = raw_line.decode("utf-8").strip()
-                if not line:
-                    continue
                 try:
+                    line = raw_line.decode("utf-8").strip()
+                    if not line:
+                        continue
                     response = process_request(line, controller)
                 except (UnicodeDecodeError, ValueError) as exc:
                     LOGGER.warning("Petición rechazada: %s", exc)
                     response = error_response(str(exc))
                 self.wfile.write(encode_response(response))
                 self.wfile.flush()
-        except ConnectionResetError:
+        except ConnectionError:
             LOGGER.info("Cliente desconectado")
 
 

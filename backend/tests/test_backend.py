@@ -1,10 +1,13 @@
 import json
+import socket
+import threading
 import unittest
 
 from backend.formal.grammar.parser import validar_secuencia
 from backend.formal.turing.turing import MultiTapeTuringMachine, TuringStep
 from backend.game.combat import CombatController, CombatState
 from backend.network.protocol import encode_response, error_response, process_request
+from backend.network.server import GameServer
 
 
 class ParserTests(unittest.TestCase):
@@ -134,6 +137,50 @@ class CombatTests(unittest.TestCase):
             "valido": False,
             "error": "JSON invalido",
         })
+
+
+class ServerTests(unittest.TestCase):
+    def setUp(self) -> None:
+        self.server = GameServer("127.0.0.1", 0)
+        self.port = self.server.server_address[1]
+        self.thread = threading.Thread(target=self.server.serve_forever, daemon=True)
+        self.thread.start()
+
+    def tearDown(self) -> None:
+        self.server.shutdown()
+        self.server.server_close()
+        self.thread.join(timeout=2)
+
+    def test_tcp_server_processes_turns_and_preserves_turing_state(self):
+        with socket.create_connection(("127.0.0.1", self.port), timeout=2) as sock:
+            reader = sock.makefile("r", encoding="utf-8")
+
+            sock.sendall((json.dumps({"secuencia": "TDDTF"}) + "\n").encode("utf-8"))
+            first = json.loads(reader.readline())
+            self.assertTrue(first["valido"])
+            self.assertEqual(first["golpe"], "Golpe de Gaban")
+            self.assertEqual(first["cintas"]["cinta1"], ["A"])
+
+            sock.sendall((json.dumps({"secuencia": "TTDF"}) + "\n").encode("utf-8"))
+            second = json.loads(reader.readline())
+            self.assertFalse(second["valido"])
+            self.assertEqual(second["cintas"]["cinta1"], ["A", "E"])
+            self.assertEqual(second["enemigo_accion"], "CASTIGO")
+
+    def test_tcp_server_handles_invalid_utf8_and_malformed_json(self):
+        with socket.create_connection(("127.0.0.1", self.port), timeout=2) as sock:
+            reader = sock.makefile("r", encoding="utf-8")
+
+            with self.assertLogs("backend.network.server", level="WARNING"):
+                sock.sendall(b"\xff\xfe\n")
+                utf8_err = json.loads(reader.readline())
+                self.assertFalse(utf8_err["valido"])
+                self.assertTrue(utf8_err["error"])
+
+                sock.sendall(b"{malformed\n")
+                json_err = json.loads(reader.readline())
+                self.assertFalse(json_err["valido"])
+                self.assertEqual(json_err["error"], "JSON inválido")
 
 
 if __name__ == "__main__":
