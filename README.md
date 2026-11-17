@@ -11,6 +11,9 @@ turno de combate.
 Desde la raíz del repositorio:
 
 ```bash
+# Instalar dependencia de Python para el parser ANTLR4
+pip install -r backend/formal/grammar/requirements.txt
+
 # Ejecutar pruebas unitarias
 python -m unittest discover -s backend/tests
 
@@ -26,4 +29,4 @@ El servidor escucha directamente peticiones TCP delimitadas por salto de línea:
 La respuesta incluye `valido`, el golpe identificado, daño, vidas, la decisión enemiga y los snapshots de las tres cintas de Turing (`cinta1`, `cinta2`, `cinta3`) y sus `cabezales`.
 
 La representación JFLAP de la máquina de decisión del enemigo está en
-[backend/turing_jff/](backend/turing_jff/).
+[backend/formal/turing/](backend/formal/turing/).
