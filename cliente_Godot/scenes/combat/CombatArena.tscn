@@ -1,10 +1,11 @@
-[gd_scene load_steps=6 format=3 uid="uid://combatarena001"]
+[gd_scene load_steps=7 format=3 uid="uid://combatarena001"]
 
 [ext_resource type="Script" path="res://scripts/combat/CombatArena.gd" id="1_arena"]
 [ext_resource type="Texture2D" path="res://assets/sprites/cielo_nocturno.png" id="2_cielo"]
 [ext_resource type="Texture2D" path="res://assets/sprites/llanero.png" id="3_llanero"]
 [ext_resource type="Texture2D" path="res://assets/sprites/demonio_espanto.png" id="4_demonio"]
 [ext_resource type="Script" path="res://scripts/combat/Llanero.gd" id="5_llanero_script"]
+[ext_resource type="Script" path="res://scripts/combat/CuatroController.gd" id="6_cuatro_script"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_llanero"]
 radius = 22.0
@@ -54,20 +55,23 @@ texture = ExtResource("3_llanero")
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Llanero"]
 shape = SubResource("CircleShape2D_llanero")
 
+[node name="CuatroController" type="Node" parent="."]
+script = ExtResource("6_cuatro_script")
+
 [node name="UI" type="CanvasLayer" parent="."]
 
 [node name="Titulo" type="Label" parent="UI"]
 offset_left = 24.0
 offset_top = 14.0
-offset_right = 760.0
+offset_right = 1240.0
 offset_bottom = 48.0
 theme_override_font_sizes/font_size = 20
-text = "🎸 El Cuatro Llanero vs. El Espanto de la Sabana (WASD para moverse)"
+text = "🎸 WASD: Mover  |  Acordes -> J: Re  |  K: Sol  |  L: La7  |  I: Sim  |  Espacio: Frenao"
 
 [node name="LabelEstado" type="Label" parent="UI"]
 offset_left = 24.0
 offset_top = 688.0
-offset_right = 900.0
+offset_right = 1240.0
 offset_bottom = 716.0
 theme_override_font_sizes/font_size = 16
-text = "Cerca Espectral Activa: No salgas del borde morado | Vida Llanero: 100"
+text = "Cuatro listo: toca J, K, L, I para acordes y Espacio para Frenao | Vida Llanero: 100"
