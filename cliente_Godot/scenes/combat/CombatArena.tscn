@@ -1,4 +1,4 @@
-[gd_scene load_steps=7 format=3 uid="uid://combatarena001"]
+[gd_scene load_steps=8 format=3 uid="uid://combatarena001"]
 
 [ext_resource type="Script" path="res://scripts/combat/CombatArena.gd" id="1_arena"]
 [ext_resource type="Texture2D" path="res://assets/sprites/cielo_nocturno.png" id="2_cielo"]
@@ -6,6 +6,7 @@
 [ext_resource type="Texture2D" path="res://assets/sprites/demonio_espanto.png" id="4_demonio"]
 [ext_resource type="Script" path="res://scripts/combat/Llanero.gd" id="5_llanero_script"]
 [ext_resource type="Script" path="res://scripts/combat/CuatroController.gd" id="6_cuatro_script"]
+[ext_resource type="AudioStream" path="res://assets/audio/musica/ambiente_pelea_silbon.wav" id="7_musica_ambiente"]
 
 [sub_resource type="CircleShape2D" id="CircleShape2D_llanero"]
 radius = 22.0
@@ -57,6 +58,11 @@ shape = SubResource("CircleShape2D_llanero")
 
 [node name="CuatroController" type="Node" parent="."]
 script = ExtResource("6_cuatro_script")
+
+[node name="MusicaAmbiente" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("7_musica_ambiente")
+volume_db = -10.0
+autoplay = true
 
 [node name="UI" type="CanvasLayer" parent="."]
 

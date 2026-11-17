@@ -9,6 +9,7 @@ const ARENA_RECT := Rect2(96, 224, 1088, 448)
 @onready var llanero: CharacterBody2D = $Llanero
 @onready var demonio: Sprite2D = $DemonioEspanto/Sprite2D
 @onready var cuatro_controller: CuatroControllerScript = $CuatroController
+@onready var musica_ambiente: AudioStreamPlayer = $MusicaAmbiente
 @onready var label_estado: Label = $UI/LabelEstado
 
 var tileset_tex: Texture2D = preload("res://assets/sprites/tiles/tileset_sabana.png")
@@ -16,6 +17,8 @@ var time_passed: float = 0.0
 
 func _ready() -> void:
 	_generar_suelo_sabana()
+	if musica_ambiente and not musica_ambiente.finished.is_connected(musica_ambiente.play):
+		musica_ambiente.finished.connect(musica_ambiente.play)
 	if cuatro_controller:
 		cuatro_controller.acorde_tocado.connect(_on_cuatro_acorde_tocado)
 		cuatro_controller.secuencia_enviada.connect(_on_cuatro_secuencia_enviada)
