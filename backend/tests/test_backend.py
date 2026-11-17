@@ -65,6 +65,43 @@ class TuringTests(unittest.TestCase):
         self.assertEqual(step.decision, "CASTIGO")
         self.assertEqual(step.cintas["cinta2"][1], "3")
 
+    def test_explicit_states_and_transitions_across_actions(self):
+        machine = MultiTapeTuringMachine()
+        self.assertEqual(machine.estado, "qObservacion")
+
+        self.assertEqual(machine.step("A").decision, "ATAQUE_RAPIDO")
+        self.assertEqual(machine.estado, "qAtaqueRapido")
+
+        self.assertEqual(machine.step("A").decision, "ATAQUE_PESADO")
+        self.assertEqual(machine.estado, "qAtaquePesado")
+        self.assertEqual(machine.furia, 2)
+
+        self.assertEqual(machine.step("D").decision, "BLOQUEO")
+        self.assertEqual(machine.estado, "qBloqueo")
+        self.assertEqual(machine.furia, 1)
+
+        self.assertEqual(machine.step("C").decision, "ATAQUE_RAPIDO")
+        self.assertEqual(machine.furia, 0)
+
+        self.assertEqual(machine.step("E").decision, "CASTIGO")
+        self.assertEqual(machine.estado, "qCastigo")
+        self.assertEqual(machine.furia, 2)
+
+    def test_rejects_invalid_action_symbol(self):
+        machine = MultiTapeTuringMachine()
+        with self.assertRaises(ValueError):
+            machine.step("X")
+
+    def test_format_trace_shows_delta_and_head_markers(self):
+        machine = MultiTapeTuringMachine()
+        machine.step("A")
+        trace = machine.format_trace()
+        self.assertIn("δ(qObservacion", trace)
+        self.assertIn("qAtaqueRapido", trace)
+        self.assertIn("Cinta 1 [cab L=0]: [A]", trace)
+        self.assertIn("Cinta 2 [cab R=0]: [1] 1", trace)
+        self.assertIn("Cinta 3 [cab S=0]: [ATAQUE_RAPIDO]", trace)
+
 
 class CombatTests(unittest.TestCase):
     def test_invalid_input_reaches_enemy_as_error(self):
