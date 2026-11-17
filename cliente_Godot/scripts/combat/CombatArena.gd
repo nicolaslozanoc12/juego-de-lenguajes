@@ -1,11 +1,15 @@
 extends Node2D
 
+const CuatroControllerScript := preload("res://scripts/combat/CuatroController.gd")
+
 const TILE_SIZE: int = 32
 const ARENA_RECT := Rect2(96, 224, 1088, 448)
 
 @onready var ground_root: Node2D = $TerrenoSabana
 @onready var llanero: CharacterBody2D = $Llanero
 @onready var demonio: Sprite2D = $DemonioEspanto/Sprite2D
+@onready var cuatro_controller: CuatroControllerScript = $CuatroController
+@onready var musica_ambiente: AudioStreamPlayer = $MusicaAmbiente
 @onready var label_estado: Label = $UI/LabelEstado
 
 var tileset_tex: Texture2D = preload("res://assets/sprites/tiles/tileset_sabana.png")
@@ -13,6 +17,13 @@ var time_passed: float = 0.0
 
 func _ready() -> void:
 	_generar_suelo_sabana()
+	if musica_ambiente and not musica_ambiente.finished.is_connected(musica_ambiente.play):
+		musica_ambiente.finished.connect(musica_ambiente.play)
+	if cuatro_controller:
+		cuatro_controller.acorde_tocado.connect(_on_cuatro_acorde_tocado)
+		cuatro_controller.secuencia_enviada.connect(_on_cuatro_secuencia_enviada)
+		cuatro_controller.secuencia_limpiada.connect(_on_cuatro_secuencia_limpiada)
+		cuatro_controller.input_bloqueado_cambiado.connect(_on_cuatro_bloqueo_cambiado)
 
 func _generar_suelo_sabana() -> void:
 	# Llenar el suelo del ruedo (desde Y=192 hasta Y=720) con las 4 baldosas de 32x32
@@ -60,3 +71,38 @@ func _process(delta: float) -> void:
 			if label_estado:
 				label_estado.text = "⚡ ¡El Muro Espectral te quema! (-5 HP) | Vida Llanero: %d" % llanero.health
 				label_estado.modulate = Color(1.0, 0.45, 0.45)
+
+
+func _on_cuatro_acorde_tocado(_token: String, _secuencia_actual: String) -> void:
+	if label_estado and not cuatro_controller.input_bloqueado:
+		label_estado.text = "🎵 Cadena: %s  (Espacio = Frenao | Backspace = Borrar) | Vida Llanero: %d" % [
+			cuatro_controller.obtener_cadena_teclas(),
+			llanero.health if llanero else 100,
+		]
+		label_estado.modulate = Color(0.75, 0.95, 1.0)
+
+
+func _on_cuatro_secuencia_enviada(secuencia: String) -> void:
+	if label_estado:
+		label_estado.text = "🚀 Enviado: %s [Espacio] (%s) | Esperando turno..." % [
+			cuatro_controller.ultima_cadena_teclas_enviada,
+			secuencia,
+		]
+		label_estado.modulate = Color(1.0, 0.9, 0.45)
+
+
+func _on_cuatro_secuencia_limpiada() -> void:
+	if label_estado:
+		label_estado.text = "Cuatro limpio: toca J, K, L, I para acordes y Espacio para Frenao | Vida Llanero: %d" % (
+			llanero.health if llanero else 100
+		)
+		label_estado.modulate = Color.WHITE
+
+
+func _on_cuatro_bloqueo_cambiado(bloqueado: bool) -> void:
+	if not bloqueado and label_estado:
+		label_estado.text = "✅ Listo | Última cadena: %s [Espacio] | Vida Llanero: %d" % [
+			cuatro_controller.ultima_cadena_teclas_enviada,
+			llanero.health if llanero else 100,
+		]
+		label_estado.modulate = Color(0.7, 1.0, 0.75)
