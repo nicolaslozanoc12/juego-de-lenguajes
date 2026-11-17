@@ -1,0 +1,11 @@
+TONICA=1
+SUBDOM=2
+DOMINANTE=3
+MENOR=4
+FRENAO=5
+WS=6
+'T'=1
+'S'=2
+'D'=3
+'M'=4
+'F'=5

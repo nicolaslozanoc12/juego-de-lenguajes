@@ -1,5 +1,4 @@
 import json
-from pathlib import Path
 import unittest
 
 from backend.formal.grammar.parser import validar_secuencia
@@ -32,6 +31,20 @@ class ParserTests(unittest.TestCase):
 
     def test_ignores_whitespace_like_the_grammar(self):
         self.assertTrue(validar_secuencia("T D D T F").valido)
+
+    def test_reports_error_sintactico_for_lexical_and_syntax_errors(self):
+        for sequence in ("TXDDTF", "TTDF", "", "   "):
+            with self.subTest(sequence=sequence):
+                result = validar_secuencia(sequence)
+                self.assertFalse(result.valido)
+                self.assertEqual(result.accion, "E")
+                self.assertIsNotNone(result.error)
+                self.assertTrue(result.error.startswith("ERROR_SINTACTICO"))
+
+    def test_recursive_contrapunteo_accepts_multiple_cycles(self):
+        result = validar_secuencia("TDSDTSDTSDTF")
+        self.assertTrue(result.valido)
+        self.assertEqual((result.golpe, result.accion), ("Contrapunteo Libre", "A"))
 
 
 class TuringTests(unittest.TestCase):
