@@ -1,6 +1,7 @@
 extends Node2D
 
 const CuatroControllerScript := preload("res://scripts/combat/CuatroController.gd")
+const NetworkClientScript := preload("res://scripts/network/NetworkClient.gd")
 
 const TILE_SIZE: int = 32
 const ARENA_RECT := Rect2(96, 224, 1088, 448)
@@ -9,6 +10,7 @@ const ARENA_RECT := Rect2(96, 224, 1088, 448)
 @onready var llanero: CharacterBody2D = $Llanero
 @onready var demonio: Sprite2D = $DemonioEspanto/Sprite2D
 @onready var cuatro_controller: CuatroControllerScript = $CuatroController
+@onready var network_client: NetworkClientScript = $NetworkClient
 @onready var musica_ambiente: AudioStreamPlayer = $MusicaAmbiente
 @onready var label_estado: Label = $UI/LabelEstado
 
@@ -24,6 +26,12 @@ func _ready() -> void:
 		cuatro_controller.secuencia_enviada.connect(_on_cuatro_secuencia_enviada)
 		cuatro_controller.secuencia_limpiada.connect(_on_cuatro_secuencia_limpiada)
 		cuatro_controller.input_bloqueado_cambiado.connect(_on_cuatro_bloqueo_cambiado)
+	if network_client:
+		if cuatro_controller:
+			cuatro_controller.secuencia_enviada.connect(network_client.enviar_secuencia)
+		network_client.combate_resuelto.connect(_on_combate_resuelto)
+		network_client.advertencia.connect(_on_network_advertencia)
+		network_client.conexion_establecida.connect(_on_network_conectado)
 
 func _generar_suelo_sabana() -> void:
 	# Llenar el suelo del ruedo (desde Y=192 hasta Y=720) con las 4 baldosas de 32x32
@@ -105,4 +113,34 @@ func _on_cuatro_bloqueo_cambiado(bloqueado: bool) -> void:
 			cuatro_controller.ultima_cadena_teclas_enviada,
 			llanero.health if llanero else 100,
 		]
+		label_estado.modulate = Color(0.7, 1.0, 0.75)
+
+
+func _on_combate_resuelto(data: Dictionary) -> void:
+	if cuatro_controller:
+		cuatro_controller.desbloquear_input()
+	if not label_estado:
+		return
+
+	if data.get("valido", false):
+		label_estado.text = "⚔️ %s | Vida Llanero: %s | Vida enemigo: %s" % [
+			data.get("golpe", "Turno resuelto"),
+			data.get("vida_jugador", "?"),
+			data.get("vida_enemigo", "?"),
+		]
+		label_estado.modulate = Color(0.7, 1.0, 0.75)
+	else:
+		label_estado.text = "❌ %s" % data.get("error", "El servidor rechazó la secuencia.")
+		label_estado.modulate = Color(1.0, 0.55, 0.55)
+
+
+func _on_network_advertencia(mensaje: String) -> void:
+	if label_estado:
+		label_estado.text = mensaje
+		label_estado.modulate = Color(1.0, 0.65, 0.35)
+
+
+func _on_network_conectado() -> void:
+	if label_estado:
+		label_estado.text = "🔌 Servidor lógico conectado."
 		label_estado.modulate = Color(0.7, 1.0, 0.75)
