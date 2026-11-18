@@ -1,0 +1,108 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/MainMenu.gd" id="1_menu_gd"]
+[ext_resource type="PackedScene" path="res://scenes/ui/FondoLlanero.tscn" id="2_fondo"]
+[ext_resource type="SpriteFrames" uid="uid://c3gqtin6hd0ct" path="res://assets/sprites/llanero_frames.tres" id="3_llanero"]
+[ext_resource type="SpriteFrames" uid="uid://c0aymb6k55xes" path="res://assets/sprites/silbon_frames.tres" id="4_silbon"]
+[ext_resource type="AudioStream" uid="uid://bw13xp3mmkcnx" path="res://assets/audio/musica/ambiente_pelea_silbon.wav" id="5_musica"]
+[ext_resource type="AudioStream" uid="uid://c3anuooj5wlq0" path="res://assets/audio/tonica_re.wav" id="6_acorde"]
+
+[node name="MainMenu" type="Node2D"]
+script = ExtResource("1_menu_gd")
+
+[node name="FondoLlanero" parent="." instance=ExtResource("2_fondo")]
+
+[node name="SpriteLlanero" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(215, 485)
+scale = Vector2(3.2, 3.2)
+sprite_frames = ExtResource("3_llanero")
+animation = &"idle_right"
+autoplay = "idle_right"
+
+[node name="SpriteSilbon" type="AnimatedSprite2D" parent="."]
+texture_filter = 1
+position = Vector2(1065, 470)
+scale = Vector2(3.2, 3.2)
+sprite_frames = ExtResource("4_silbon")
+animation = &"idle_left"
+autoplay = "idle_left"
+
+[node name="MusicaMenu" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_musica")
+volume_db = -9.0
+autoplay = true
+
+[node name="SfxFoco" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("6_acorde")
+volume_db = -8.0
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="TituloPrincipal" type="Label" parent="UI"]
+offset_left = 140.0
+offset_top = 86.0
+offset_right = 1140.0
+offset_bottom = 152.0
+theme_override_colors/font_color = Color(1, 0.89, 0.38, 1)
+theme_override_colors/font_outline_color = Color(0.03, 0.03, 0.08, 0.96)
+theme_override_constants/outline_size = 7
+theme_override_font_sizes/font_size = 46
+text = "🎸 EL CUATRO LLANERO"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Subtitulo" type="Label" parent="UI"]
+offset_left = 140.0
+offset_top = 152.0
+offset_right = 1140.0
+offset_bottom = 192.0
+theme_override_colors/font_color = Color(0.84, 0.92, 1, 1)
+theme_override_colors/font_outline_color = Color(0.03, 0.03, 0.08, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 19
+text = "Duelo en la sabana contra El Silbón  ·  ANTLR4 & Máquina de Turing"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="TarjetaBorde" type="ColorRect" parent="UI"]
+offset_left = 426.0
+offset_top = 242.0
+offset_right = 854.0
+offset_bottom = 548.0
+color = Color(0.75, 0.55, 0.95, 0.95)
+
+[node name="TarjetaFondo" type="ColorRect" parent="UI/TarjetaBorde"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 424.0
+offset_bottom = 302.0
+color = Color(0.06, 0.06, 0.12, 0.94)
+
+[node name="BotonTutorial" type="Button" parent="UI/TarjetaBorde/TarjetaFondo"]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 34.0
+offset_right = 386.0
+offset_bottom = 98.0
+theme_override_font_sizes/font_size = 20
+text = "📖  TUTORIAL  (Cómo jugar)"
+
+[node name="BotonJugar" type="Button" parent="UI/TarjetaBorde/TarjetaFondo"]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 118.0
+offset_right = 386.0
+offset_bottom = 182.0
+theme_override_font_sizes/font_size = 20
+text = "⚔️  JUGAR AHORA"
+
+[node name="BotonSalir" type="Button" parent="UI/TarjetaBorde/TarjetaFondo"]
+layout_mode = 0
+offset_left = 34.0
+offset_top = 202.0
+offset_right = 386.0
+offset_bottom = 262.0
+theme_override_font_sizes/font_size = 18
+text = "🚪  SALIR"

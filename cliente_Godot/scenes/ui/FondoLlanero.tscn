@@ -1,0 +1,134 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" uid="uid://cqsukkkiigtrb" path="res://scripts/combat/HorizonteLlanura.gd" id="1_hor"]
+[ext_resource type="Texture2D" uid="uid://cue1r76fub8c0" path="res://assets/sprites/horizonte/cielo_fondo.png" id="2_cielo"]
+[ext_resource type="Texture2D" uid="uid://dmmt4gn51w7ee" path="res://assets/sprites/horizonte/nubes_nocturnas.png" id="3_nubes"]
+[ext_resource type="Texture2D" uid="uid://cpkyt3eyhs0ff" path="res://assets/sprites/horizonte/luna_llanera.png" id="4_luna"]
+[ext_resource type="Shader" uid="uid://bp73fa71kf1to" path="res://assets/shaders/viento_arboles.gdshader" id="5_shader"]
+[ext_resource type="Texture2D" uid="uid://iwffaxtcwcjb" path="res://assets/sprites/horizonte/saman_grande.png" id="6_samg"]
+[ext_resource type="Texture2D" uid="uid://505s500y7yoq" path="res://assets/sprites/horizonte/saman_mediano.png" id="7_samm"]
+[ext_resource type="TileSet" uid="uid://cyxwk2tf5srd6" path="res://assets/sprites/tiles/sabana_tileset.tres" id="8_tiles"]
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m1"]
+shader = ExtResource("5_shader")
+shader_parameter/speed = 2.8
+shader_parameter/strength = 5.0
+shader_parameter/phase = 0.0
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m2"]
+shader = ExtResource("5_shader")
+shader_parameter/speed = 3.1
+shader_parameter/strength = 4.4
+shader_parameter/phase = 1.4
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m3"]
+shader = ExtResource("5_shader")
+shader_parameter/speed = 2.7
+shader_parameter/strength = 4.6
+shader_parameter/phase = 2.8
+
+[sub_resource type="ShaderMaterial" id="ShaderMaterial_m4"]
+shader = ExtResource("5_shader")
+shader_parameter/speed = 2.6
+shader_parameter/strength = 5.2
+shader_parameter/phase = 4.9
+
+[node name="FondoLlanero" type="Node2D"]
+
+[node name="FondoSabanaBase" type="ColorRect" parent="."]
+mouse_filter = 2
+offset_top = 184.0
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.11, 0.137, 0.11, 1)
+
+[node name="HorizonteLlanura" type="CanvasLayer" parent="."]
+layer = -5
+script = ExtResource("1_hor")
+
+[node name="CieloFondo" type="Sprite2D" parent="HorizonteLlanura"]
+texture_filter = 1
+scale = Vector2(4, 4)
+texture = ExtResource("2_cielo")
+centered = false
+
+[node name="NubesA" type="Sprite2D" parent="HorizonteLlanura"]
+texture_filter = 1
+position = Vector2(0, 18)
+scale = Vector2(4, 4)
+texture = ExtResource("3_nubes")
+centered = false
+
+[node name="NubesB" type="Sprite2D" parent="HorizonteLlanura"]
+texture_filter = 1
+position = Vector2(-1280, 18)
+scale = Vector2(4, 4)
+texture = ExtResource("3_nubes")
+centered = false
+
+[node name="LunaLlanera" type="Sprite2D" parent="HorizonteLlanura"]
+texture_filter = 1
+position = Vector2(325, 62)
+scale = Vector2(3.4, 3.4)
+texture = ExtResource("4_luna")
+
+[node name="ArbolesHorizonte" type="Node2D" parent="HorizonteLlanura"]
+
+[node name="Saman1" type="Sprite2D" parent="HorizonteLlanura/ArbolesHorizonte"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_m1")
+position = Vector2(92, 178)
+scale = Vector2(2.8, 2.8)
+texture = ExtResource("6_samg")
+offset = Vector2(0, -14)
+
+[node name="Saman2" type="Sprite2D" parent="HorizonteLlanura/ArbolesHorizonte"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_m2")
+position = Vector2(290, 178)
+scale = Vector2(2.5, 2.5)
+texture = ExtResource("7_samm")
+offset = Vector2(0, -11)
+
+[node name="Saman3" type="Sprite2D" parent="HorizonteLlanura/ArbolesHorizonte"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_m3")
+position = Vector2(980, 178)
+scale = Vector2(2.6, 2.6)
+texture = ExtResource("7_samm")
+offset = Vector2(0, -11)
+
+[node name="Saman4" type="Sprite2D" parent="HorizonteLlanura/ArbolesHorizonte"]
+texture_filter = 1
+material = SubResource("ShaderMaterial_m4")
+position = Vector2(1176, 178)
+scale = Vector2(2.8, 2.8)
+texture = ExtResource("6_samg")
+offset = Vector2(0, -14)
+
+[node name="SueloSabana" type="TileMapLayer" parent="."]
+texture_filter = 1
+position = Vector2(0, 184)
+scale = Vector2(2, 2)
+tile_map_data = PackedByteArray("AAAAAAAAAAAFAAAAAAABAAAAAAAFAAAAAAACAAAAAAAFAAAAAAADAAAAAAAFAAAAAAAEAAAAAAAFAAAAAAAFAAAAAAAFAAAAAAAGAAAAAAAFAAAAAAAHAAAAAAAFAAAAAAAIAAAAAAAFAAAAAAAJAAAAAAAFAAAAAAAKAAAAAAAFAAAAAAALAAAAAAAFAAAAAAAMAAAAAAAFAAAAAAANAAAAAAAFAAAAAAAOAAAAAAAFAAAAAAAPAAAAAAAFAAAAAAAQAAAAAAAFAAAAAAARAAAAAAAFAAAAAAASAAAAAAAFAAAAAAATAAAAAAAFAAAAAAAAAAEAAAAAAAAAAAABAAEAAAABAAAAAAACAAEAAAAAAAAAAAADAAEAAAAAAAAAAAAEAAEAAAACAAAAAAAFAAEAAAAAAAAAAAAGAAEAAAAAAAAAAAAHAAEAAAAAAAAAAAAIAAEAAAAAAAAAAAAJAAEAAAAAAAAAAAAKAAEAAAABAAAAAAALAAEAAAAAAAAAAAAMAAEAAAACAAAAAAANAAEAAAACAAAAAAAOAAEAAAAAAAAAAAAPAAEAAAAAAAAAAAAQAAEAAAAAAAAAAAARAAEAAAACAAAAAAASAAEAAAAAAAAAAAATAAEAAAAAAAAAAAAAAAIAAAAAAAAAAAABAAIAAAACAAAAAAACAAIAAAACAAAAAAADAAIAAAAAAAAAAAAEAAIAAAACAAAAAAAFAAIAAAAAAAAAAAAGAAIAAAAAAAAAAAAHAAIAAAABAAAAAAAIAAIAAAABAAAAAAAJAAIAAAAAAAAAAAAKAAIAAAACAAAAAAALAAIAAAAAAAAAAAAMAAIAAAAAAAAAAAANAAIAAAAAAAAAAAAOAAIAAAAAAAAAAAAPAAIAAAAAAAAAAAAQAAIAAAAAAAAAAAARAAIAAAAAAAAAAAASAAIAAAACAAAAAAATAAIAAAAAAAAAAAAAAAMAAAAAAAAAAAABAAMAAAAAAAAAAAACAAMAAAAAAAAAAAADAAMAAAACAAAAAAAEAAMAAAAAAAAAAAAFAAMAAAAAAAAAAAAGAAMAAAACAAAAAAAHAAMAAAAAAAAAAAAIAAMAAAAAAAAAAAAJAAMAAAAAAAAAAAAKAAMAAAAAAAAAAAALAAMAAAAAAAAAAAAMAAMAAAAAAAAAAAANAAMAAAAAAAAAAAAOAAMAAAACAAAAAAAPAAMAAAAAAAAAAAAQAAMAAAAAAAAAAAARAAMAAAAAAAAAAAASAAMAAAAAAAAAAAATAAMAAAABAAAAAAAAAAQAAAAAAAAAAAABAAQAAAAAAAAAAAACAAQAAAAAAAAAAAADAAQAAAAAAAAAAAAEAAQAAAAAAAAAAAAFAAQAAAAAAAAAAAAGAAQAAAAAAAAAAAAHAAQAAAABAAAAAAAIAAQAAAAAAAAAAAAJAAQAAAAAAAAAAAAKAAQAAAAAAAAAAAALAAQAAAAAAAAAAAAMAAQAAAACAAAAAAANAAQAAAAAAAAAAAAOAAQAAAAAAAAAAAAPAAQAAAACAAAAAAAQAAQAAAAAAAAAAAARAAQAAAAAAAAAAAASAAQAAAAAAAAAAAATAAQAAAAAAAAAAAAAAAUAAAAAAAAAAAABAAUAAAABAAAAAAACAAUAAAAAAAAAAAADAAUAAAAAAAAAAAAEAAUAAAAAAAAAAAAFAAUAAAABAAAAAAAGAAUAAAAAAAAAAAAHAAUAAAAAAAAAAAAIAAUAAAAAAAAAAAAJAAUAAAAAAAAAAAAKAAUAAAAAAAAAAAALAAUAAAAAAAAAAAAMAAUAAAAAAAAAAAANAAUAAAAAAAAAAAAOAAUAAAAAAAAAAAAPAAUAAAAAAAAAAAAQAAUAAAAAAAAAAAARAAUAAAAAAAAAAAASAAUAAAACAAAAAAATAAUAAAAAAAAAAAAAAAYAAAABAAAAAAABAAYAAAAAAAAAAAACAAYAAAAAAAAAAAADAAYAAAABAAAAAAAEAAYAAAAAAAAAAAAFAAYAAAAAAAAAAAAGAAYAAAABAAAAAAAHAAYAAAAAAAAAAAAIAAYAAAAAAAAAAAAJAAYAAAAAAAAAAAAKAAYAAAAAAAAAAAALAAYAAAACAAAAAAAMAAYAAAABAAAAAAANAAYAAAAAAAAAAAAOAAYAAAAAAAAAAAAPAAYAAAAAAAAAAAAQAAYAAAAAAAAAAAARAAYAAAAAAAAAAAASAAYAAAABAAAAAAATAAYAAAABAAAAAAAAAAcAAAACAAMAAAABAAcAAAACAAMAAAACAAcAAAACAAMAAAADAAcAAAACAAMAAAAEAAcAAAACAAMAAAAFAAcAAAACAAMAAAAGAAcAAAACAAMAAAAHAAcAAAACAAMAAAAIAAcAAAACAAMAAAAJAAcAAAACAAMAAAAKAAcAAAACAAMAAAALAAcAAAACAAMAAAAMAAcAAAACAAMAAAANAAcAAAACAAMAAAAOAAcAAAACAAMAAAAPAAcAAAACAAMAAAAQAAcAAAACAAMAAAARAAcAAAACAAMAAAASAAcAAAACAAMAAAATAAcAAAACAAMAAAAAAAgAAAAEAAAAAAABAAgAAAADAAAAAAACAAgAAAADAAAAAAADAAgAAAAEAAAAAAAEAAgAAAADAAAAAAAFAAgAAAAEAAAAAAAGAAgAAAADAAAAAAAHAAgAAAAEAAAAAAAIAAgAAAAEAAAAAAAJAAgAAAADAAAAAAAKAAgAAAAEAAAAAAALAAgAAAADAAAAAAAMAAgAAAADAAAAAAANAAgAAAAEAAAAAAAOAAgAAAADAAAAAAAPAAgAAAADAAAAAAAQAAgAAAAEAAAAAAARAAgAAAAEAAAAAAASAAgAAAADAAAAAAATAAgAAAADAAAAAAA=")
+tile_set = ExtResource("8_tiles")
+
+[node name="VeloNoche" type="ColorRect" parent="."]
+mouse_filter = 2
+offset_right = 1280.0
+offset_bottom = 720.0
+color = Color(0.04, 0.04, 0.09, 0.28)
+
+[node name="Luciernagas" type="CPUParticles2D" parent="."]
+position = Vector2(640, 440)
+amount = 20
+lifetime = 3.5
+preprocess = 1.5
+emission_shape = 3
+emission_rect_extents = Vector2(580, 220)
+gravity = Vector2(4, -6)
+initial_velocity_min = 4.0
+initial_velocity_max = 12.0
+scale_amount_min = 2.5
+scale_amount_max = 4.5
+color = Color(0.85, 1, 0.5, 0.72)

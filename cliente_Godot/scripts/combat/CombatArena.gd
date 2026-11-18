@@ -3,6 +3,7 @@ extends Node2D
 const CuatroControllerScript := preload("res://scripts/combat/CuatroController.gd")
 const NetworkClientScript := preload("res://scripts/network/NetworkClient.gd")
 const ProyectilMagicoScript := preload("res://scripts/combat/ProyectilMagico.gd")
+const SfxControllerScript := preload("res://scripts/combat/SfxController.gd")
 
 ## Área interior segura delimitada por el muro espectral cerrado (arriba, abajo, izq, der).
 const ARENA_RECT := Rect2(96, 250, 1088, 392)
@@ -90,6 +91,7 @@ const CONFIG_ATAQUE_ENEMIGO := {
 @onready var el_silbon: CharacterBody2D = $ElSilbon
 @onready var muro_espectral: TileMapLayer = $MuroEspectral
 @onready var cuatro_controller: CuatroControllerScript = $CuatroController
+@onready var sfx_controller: SfxControllerScript = $SfxController
 @onready var network_client: NetworkClientScript = $NetworkClient
 @onready var musica_ambiente: AudioStreamPlayer = $MusicaAmbiente
 @onready var label_estado: Label = $UI/LabelEstado
@@ -98,6 +100,7 @@ const CONFIG_ATAQUE_ENEMIGO := {
 @onready var label_titulo_fin: Label = $UI/PanelFinCombate/BordeCaja/FondoCaja/LabelTituloFin
 @onready var label_detalle_fin: Label = $UI/PanelFinCombate/BordeCaja/FondoCaja/LabelDetalleFin
 @onready var boton_reiniciar: Button = $UI/PanelFinCombate/BordeCaja/FondoCaja/BotonReiniciar
+@onready var boton_menu: Button = $UI/PanelFinCombate/BordeCaja/FondoCaja/BotonMenu
 
 var time_passed: float = 0.0
 var _esperando_respuesta_red: bool = false
@@ -108,7 +111,11 @@ func _ready() -> void:
 	if panel_fin_combate:
 		panel_fin_combate.visible = false
 	if boton_reiniciar:
+		UiEstiloHelper.estilizar_boton(boton_reiniciar, Color(0.18, 0.26, 0.16), Color(0.95, 0.80, 0.34))
 		boton_reiniciar.pressed.connect(_on_reiniciar_presionado)
+	if boton_menu:
+		UiEstiloHelper.estilizar_boton(boton_menu, Color(0.18, 0.14, 0.28), Color(0.68, 0.50, 0.92))
+		boton_menu.pressed.connect(_on_menu_presionado)
 	if musica_ambiente and not musica_ambiente.finished.is_connected(musica_ambiente.play):
 		musica_ambiente.finished.connect(musica_ambiente.play)
 	if cuatro_controller:
@@ -155,6 +162,8 @@ func _process(delta: float) -> void:
 	if llanero and not ARENA_RECT.has_point(llanero.global_position):
 		var centro := ARENA_RECT.get_center()
 		llanero.aplicar_rebote_muro(centro, 5)
+		if sfx_controller and sfx_controller.reproducir("muro_choque"):
+			sfx_controller.reproducir_dano_jugador(llanero.health <= 0, _silbon_vivo())
 		if not _combate_terminado and label_estado:
 			label_estado.text = "⚡ ¡El Muro Espectral te quema! (-5 HP) | Vida Llanero: %d" % llanero.health
 			label_estado.modulate = Color(1.0, 0.45, 0.85)
@@ -213,6 +222,9 @@ func _on_cuatro_bloqueo_cambiado(bloqueado: bool) -> void:
 
 func _on_silbon_ataque_cuerpo_a_cuerpo(dano: int) -> void:
 	_sacudir_camara(4.0)
+	if sfx_controller:
+		sfx_controller.reproducir("silbon_melee")
+		sfx_controller.reproducir_dano_jugador(llanero != null and llanero.health <= 0, _silbon_vivo())
 	if not label_estado or not llanero:
 		return
 	var vida_ene: int = int(el_silbon.health) if el_silbon else 100
@@ -227,6 +239,8 @@ func _on_silbon_ataque_cuerpo_a_cuerpo(dano: int) -> void:
 
 
 func _on_combate_resuelto(data: Dictionary) -> void:
+	if data.get("reiniciado", false):
+		return
 	_esperando_respuesta_red = false
 	if _combate_terminado:
 		return
@@ -257,6 +271,8 @@ func _on_combate_resuelto(data: Dictionary) -> void:
 		]
 		label_estado.modulate = Color(0.7, 1.0, 0.75)
 	else:
+		if sfx_controller:
+			sfx_controller.reproducir("desafinacion")
 		if llanero:
 			llanero.inmovilizar(1.0)
 			llanero.mostrar_desafinacion()
@@ -280,12 +296,16 @@ func _reproducir_accion_jugador(data: Dictionary) -> void:
 	if accion == "D":
 		var etiqueta := "🌀 ESQUIVE" if golpe == "Zumbe y Zumbe" else "🛡️ PARRY"
 		llanero.mostrar_escudo_armonico(color, 0.95, etiqueta)
+		if sfx_controller:
+			sfx_controller.reproducir("llanero_esquive" if golpe == "Zumbe y Zumbe" else "llanero_parry")
 		return
 
 	var dir_base: Vector2 = llanero.obtener_vector_direccion()
 	var limites_disparo := ARENA_RECT.grow(50.0)
 
 	if accion == "C":
+		if sfx_controller:
+			sfx_controller.reproducir("llanero_calma")
 		ProyectilMagicoScript.crear_texto_flotante(self, llanero.global_position, "🎵 Furia -1", color)
 		_lanzar_proyectil({
 			"origen": llanero.global_position + Vector2(0, -8),
@@ -324,6 +344,8 @@ func _disparar_salva_jugador(golpe: String, cfg: Dictionary, color: Color, dano_
 		var disparo := func() -> void:
 			if not is_instance_valid(self) or not is_inside_tree() or not is_instance_valid(llanero) or not is_instance_valid(el_silbon):
 				return
+			if sfx_controller:
+				sfx_controller.reproducir("llanero_disparo")
 			var proj := _lanzar_proyectil({
 				"origen": llanero.global_position + Vector2(0, -6) + perp * lateral,
 				"objetivo": el_silbon,
@@ -341,6 +363,8 @@ func _disparar_salva_jugador(golpe: String, cfg: Dictionary, color: Color, dano_
 				if es_primer_impacto:
 					estado_salva["resuelta"] = true
 					el_silbon.health = max(0, int(el_silbon.health) - dano_ene)
+				if sfx_controller and int(el_silbon.health) > 0:
+					sfx_controller.reproducir("silbon_impacto")
 				el_silbon.recibir_impacto_visual(color, dano_ene if es_primer_impacto else 0)
 				if es_primer_impacto and label_estado and is_instance_valid(llanero):
 					if int(el_silbon.health) <= 0:
@@ -356,6 +380,8 @@ func _disparar_salva_jugador(golpe: String, cfg: Dictionary, color: Color, dano_
 				estado_salva["pendientes"] = int(estado_salva["pendientes"]) - 1
 				if int(estado_salva["pendientes"]) <= 0 and not bool(estado_salva["resuelta"]) and is_instance_valid(llanero):
 					estado_salva["resuelta"] = true
+					if sfx_controller:
+						sfx_controller.reproducir("disparo_fallo")
 					ProyectilMagicoScript.crear_texto_flotante(self, llanero.global_position, "💨 ¡Fallaste!", Color(0.85, 0.85, 0.95))
 					if label_estado and int(el_silbon.health) > 0:
 						label_estado.text = "💨 ¡Fallaste %s! Apunta hacia El Silbón | Llanero: %d HP | Silbón: %d HP" % [
@@ -379,10 +405,14 @@ func _reproducir_respuesta_enemigo(data: Dictionary) -> void:
 	var fue_parry := (accion_jugador == "D")
 
 	if enemigo_accion == "BLOQUEO":
+		if sfx_controller:
+			sfx_controller.reproducir("silbon_bloqueo")
 		el_silbon.mostrar_bloqueo_espectral()
 		return
 
 	if enemigo_accion == "CASTIGO" and accion_jugador == "E":
+		if sfx_controller:
+			sfx_controller.reproducir("silbon_furia")
 		el_silbon.anunciar_ataque(Color(0.88, 0.35, 1.0), "🔥 FURIA +2")
 		return
 
@@ -394,6 +424,7 @@ func _reproducir_respuesta_enemigo(data: Dictionary) -> void:
 
 func _disparar_salva_enemiga(cfg: Dictionary, dano_jugador: int, fue_parry: bool) -> void:
 	var color_ene: Color = cfg["color"]
+	var tipo_ataque := str(cfg.get("tipo", ""))
 	var dir_base := (llanero.global_position - el_silbon.global_position).normalized()
 	if dir_base.length() < 0.1:
 		dir_base = Vector2.LEFT
@@ -405,6 +436,8 @@ func _disparar_salva_enemiga(cfg: Dictionary, dano_jugador: int, fue_parry: bool
 		float(cfg["cono_duracion"]),
 		float(cfg["cono_apertura"])
 	)
+	if sfx_controller:
+		sfx_controller.reproducir("silbon_furia" if tipo_ataque == "castigo" else "silbon_silbido")
 
 	var angulos: Array = cfg["angulos_deg"]
 	var intervalo := float(cfg["intervalo"])
@@ -417,11 +450,14 @@ func _disparar_salva_enemiga(cfg: Dictionary, dano_jugador: int, fue_parry: bool
 		var ang_rad := deg_to_rad(float(angulos[i]))
 		var dir_disparo := dir_base.rotated(ang_rad)
 		var espera := retraso_base + intervalo * float(i)
+		var es_primero := (i == 0)
 		_programar_evento(espera, func() -> void:
 			if not is_instance_valid(self) or not is_inside_tree() or not is_instance_valid(el_silbon) or not is_instance_valid(llanero):
 				return
 			if _combate_terminado or int(el_silbon.health) <= 0:
 				return
+			if es_primero and tipo_ataque == "castigo" and sfx_controller:
+				sfx_controller.reproducir("silbon_silbido")
 			var proj := _lanzar_proyectil({
 				"origen": el_silbon.global_position + Vector2(0, -6),
 				"objetivo": llanero,
@@ -430,7 +466,7 @@ func _disparar_salva_enemiga(cfg: Dictionary, dano_jugador: int, fue_parry: bool
 				"velocidad": float(cfg["velocidad"]),
 				"escala": float(cfg["escala"]),
 				"hitbox": float(cfg["hitbox"]),
-				"tipo": str(cfg["tipo"]),
+				"tipo": tipo_ataque,
 				"teledirigido": false,
 				"limites": limites_disparo,
 			}, func(_obj: Node2D, _pos: Vector2) -> void:
@@ -439,6 +475,12 @@ func _disparar_salva_enemiga(cfg: Dictionary, dano_jugador: int, fue_parry: bool
 					return
 				estado_salva["resuelta"] = true
 				var dano_aplicado := 0 if fue_parry else dano_jugador
+				if sfx_controller:
+					if fue_parry:
+						sfx_controller.reproducir("llanero_parry")
+					elif dano_aplicado > 0:
+						var es_mortal: bool = (int(llanero.health) - dano_aplicado) <= 0
+						sfx_controller.reproducir_dano_jugador(es_mortal, _silbon_vivo())
 				llanero.recibir_impacto_visual(color_ene, dano_aplicado, fue_parry)
 				if not fue_parry and sacudida > 0.0:
 					_sacudir_camara(sacudida)
@@ -448,6 +490,8 @@ func _disparar_salva_enemiga(cfg: Dictionary, dano_jugador: int, fue_parry: bool
 				estado_salva["pendientes"] = int(estado_salva["pendientes"]) - 1
 				if not _combate_terminado and int(estado_salva["pendientes"]) <= 0 and not estado_salva["resuelta"] and is_instance_valid(llanero):
 					estado_salva["resuelta"] = true
+					if sfx_controller:
+						sfx_controller.reproducir("llanero_esquive")
 					llanero.mostrar_esquive()
 					if label_estado and not label_estado.text.begins_with("🏆"):
 						label_estado.text = "💨 ¡Esquivaste el ataque! | Llanero: %d HP | Silbón: %d HP" % [
@@ -524,11 +568,21 @@ func _on_silbon_derrotado() -> void:
 	)
 
 
+func _silbon_vivo() -> bool:
+	return is_instance_valid(el_silbon) and int(el_silbon.health) > 0
+
+
 func _finalizar_combate(victoria: bool, detalle: String) -> void:
 	if _combate_terminado:
 		return
 	_combate_terminado = true
 	_esperando_respuesta_red = false
+	if sfx_controller:
+		sfx_controller.detener_pendientes()
+		sfx_controller.reproducir("victoria" if victoria else "derrota")
+	if is_instance_valid(musica_ambiente):
+		var tween_mus := create_tween()
+		tween_mus.tween_property(musica_ambiente, "volume_db", -16.0, 0.45)
 	if cuatro_controller:
 		cuatro_controller.finalizar_combate()
 	for child in get_children():
@@ -569,6 +623,12 @@ func _on_reiniciar_presionado() -> void:
 	get_tree().reload_current_scene()
 
 
+func _on_menu_presionado() -> void:
+	if network_client:
+		network_client.enviar_reinicio_servidor()
+	get_tree().change_scene_to_file("res://scenes/ui/MainMenu.tscn")
+
+
 func _on_network_advertencia(mensaje: String) -> void:
 	if _combate_terminado:
 		return
@@ -583,6 +643,8 @@ func _on_network_advertencia(mensaje: String) -> void:
 func _on_network_conectado() -> void:
 	if _combate_terminado:
 		return
+	if network_client:
+		network_client.enviar_reinicio_servidor()
 	if label_estado:
 		label_estado.text = "🔌 Servidor lógico conectado (127.0.0.1:8765)."
 		label_estado.modulate = Color(0.7, 1.0, 0.75)

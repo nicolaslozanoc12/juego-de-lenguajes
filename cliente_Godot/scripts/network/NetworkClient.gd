@@ -45,6 +45,10 @@ func _exit_tree() -> void:
 
 func reiniciar_servidor_y_recargar() -> void:
 	_reiniciando_escena = true
+	enviar_reinicio_servidor()
+
+
+func enviar_reinicio_servidor() -> void:
 	if _peer != null and _peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
 		_peer.put_data((JSON.stringify({"reiniciar": true}) + "\n").to_utf8_buffer())
 

@@ -16,6 +16,7 @@
 [ext_resource type="Script" uid="uid://cfbxq7rmmi27" path="res://scripts/combat/CuatroController.gd" id="14_fxrfm"]
 [ext_resource type="AudioStream" uid="uid://bw13xp3mmkcnx" path="res://assets/audio/musica/ambiente_pelea_silbon.wav" id="15_0urjw"]
 [ext_resource type="Script" uid="uid://chnuqipoyeuii" path="res://scripts/network/NetworkClient.gd" id="16_network"]
+[ext_resource type="Script" path="res://scripts/combat/SfxController.gd" id="17_sfx"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_om66t"]
 shader = ExtResource("6_pu5s8")
@@ -228,6 +229,9 @@ color = Color(0.85, 1, 0.5, 0.72)
 [node name="CuatroController" type="Node" parent="." unique_id=99970634]
 script = ExtResource("14_fxrfm")
 
+[node name="SfxController" type="Node" parent="." unique_id=1918273645]
+script = ExtResource("17_sfx")
+
 [node name="NetworkClient" type="Node" parent="." unique_id=181240019]
 script = ExtResource("16_network")
 
@@ -314,9 +318,18 @@ autowrap_mode = 3
 
 [node name="BotonReiniciar" type="Button" parent="UI/PanelFinCombate/BordeCaja/FondoCaja" unique_id=144501207]
 layout_mode = 0
-offset_left = 150.0
+offset_left = 36.0
 offset_top = 196.0
-offset_right = 410.0
+offset_right = 276.0
 offset_bottom = 248.0
-theme_override_font_sizes/font_size = 18
+theme_override_font_sizes/font_size = 17
 text = "🔄 Jugar de nuevo (R)"
+
+[node name="BotonMenu" type="Button" parent="UI/PanelFinCombate/BordeCaja/FondoCaja" unique_id=144501208]
+layout_mode = 0
+offset_left = 288.0
+offset_top = 196.0
+offset_right = 524.0
+offset_bottom = 248.0
+theme_override_font_sizes/font_size = 17
+text = "🏠 Menú Principal"

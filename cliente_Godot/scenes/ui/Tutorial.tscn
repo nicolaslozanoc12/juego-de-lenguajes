@@ -1,0 +1,370 @@
+[gd_scene format=3]
+
+[ext_resource type="Script" path="res://scripts/ui/Tutorial.gd" id="1_tut_gd"]
+[ext_resource type="PackedScene" path="res://scenes/ui/FondoLlanero.tscn" id="2_fondo"]
+[ext_resource type="SpriteFrames" uid="uid://c3gqtin6hd0ct" path="res://assets/sprites/llanero_frames.tres" id="3_llanero"]
+[ext_resource type="SpriteFrames" uid="uid://c0aymb6k55xes" path="res://assets/sprites/silbon_frames.tres" id="4_silbon"]
+[ext_resource type="AudioStream" uid="uid://bw13xp3mmkcnx" path="res://assets/audio/musica/ambiente_pelea_silbon.wav" id="5_musica"]
+
+[node name="Tutorial" type="Node2D"]
+script = ExtResource("1_tut_gd")
+
+[node name="FondoLlanero" parent="." instance=ExtResource("2_fondo")]
+
+[node name="MusicaTutorial" type="AudioStreamPlayer" parent="."]
+stream = ExtResource("5_musica")
+volume_db = -10.5
+autoplay = true
+
+[node name="UI" type="CanvasLayer" parent="."]
+
+[node name="PanelBorde" type="ColorRect" parent="UI"]
+offset_left = 90.0
+offset_top = 48.0
+offset_right = 1190.0
+offset_bottom = 672.0
+color = Color(0.75, 0.55, 0.95, 0.95)
+
+[node name="PanelFondo" type="ColorRect" parent="UI/PanelBorde"]
+layout_mode = 0
+offset_left = 4.0
+offset_top = 4.0
+offset_right = 1096.0
+offset_bottom = 620.0
+color = Color(0.06, 0.06, 0.12, 0.95)
+
+[node name="TituloTutorial" type="Label" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 12.0
+offset_right = 1068.0
+offset_bottom = 54.0
+theme_override_colors/font_color = Color(1, 0.89, 0.38, 1)
+theme_override_colors/font_outline_color = Color(0.03, 0.03, 0.08, 0.95)
+theme_override_constants/outline_size = 5
+theme_override_font_sizes/font_size = 28
+text = "📖 GUÍA DEL LLANERO — CÓMO JUGAR"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="Tab1" type="Button" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 64.0
+offset_right = 356.0
+offset_bottom = 104.0
+theme_override_font_sizes/font_size = 16
+text = "1. Controles y Cuatro"
+
+[node name="Tab2" type="Button" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 382.0
+offset_top = 64.0
+offset_right = 710.0
+offset_bottom = 104.0
+theme_override_font_sizes/font_size = 16
+text = "2. Acordes y Golpes"
+
+[node name="Tab3" type="Button" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 736.0
+offset_top = 64.0
+offset_right = 1064.0
+offset_bottom = 104.0
+theme_override_font_sizes/font_size = 16
+text = "3. El Silbón y Turing"
+
+[node name="Contenido" type="ColorRect" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 116.0
+offset_right = 1064.0
+offset_bottom = 532.0
+color = Color(0.09, 0.09, 0.17, 0.94)
+
+[node name="Pagina1" type="Control" parent="UI/PanelBorde/PanelFondo/Contenido"]
+layout_mode = 0
+offset_right = 1036.0
+offset_bottom = 416.0
+
+[node name="MovTitulo" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 490.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.45, 0.95, 0.80, 1)
+theme_override_font_sizes/font_size = 20
+text = "🕹️ MOVIMIENTO, APUNTADO Y ARENA"
+
+[node name="MovTexto" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 56.0
+offset_right = 392.0
+offset_bottom = 304.0
+theme_override_colors/font_color = Color(0.92, 0.94, 0.98, 1)
+theme_override_font_sizes/font_size = 15
+text = "• WASD o Flechas: Mueve al Llanero en 8 direcciones.
+
+• Apuntado manual: Disparas hacia donde mira tu Llanero. ¡Apunta antes de cerrar el compás!
+
+• Esquiva en tiempo real: Muévete para evitar ráfagas y calaveras.
+
+• Muro Espectral: Tocar los bordes morados quema (-5 HP) y empuja."
+autowrap_mode = 3
+
+[node name="SpriteLlaneroDemo" type="AnimatedSprite2D" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1"]
+texture_filter = 1
+position = Vector2(454, 184)
+scale = Vector2(2.6, 2.6)
+sprite_frames = ExtResource("3_llanero")
+animation = &"walk_right"
+autoplay = "walk_right"
+
+[node name="CuatroTitulo" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1"]
+layout_mode = 0
+offset_left = 532.0
+offset_top = 18.0
+offset_right = 1012.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(1, 0.86, 0.36, 1)
+theme_override_font_sizes/font_size = 20
+text = "🎸 TECLAS DEL CUATRO LLANERO"
+
+[node name="CuatroTexto" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1"]
+layout_mode = 0
+offset_left = 532.0
+offset_top = 56.0
+offset_right = 1012.0
+offset_bottom = 290.0
+theme_override_colors/font_color = Color(0.95, 0.94, 0.90, 1)
+theme_override_font_sizes/font_size = 16
+text = "• J  →  Tónica Re  (T)
+• K  →  Subdominante Sol  (S)
+• L  →  Dominante La7  (D)
+• I  →  Menor Sim  (M)
+
+• Espacio  →  Frenao (F): Cierra tu secuencia y dispara el golpe o defensa.
+
+• Backspace  →  Borra los acordes acumulados antes de presionar Espacio."
+autowrap_mode = 3
+
+[node name="CajaPractica" type="ColorRect" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 316.0
+offset_right = 1012.0
+offset_bottom = 396.0
+color = Color(0.06, 0.06, 0.11, 0.96)
+
+[node name="PracticaTitulo" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1/CajaPractica"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 8.0
+offset_right = 970.0
+offset_bottom = 34.0
+theme_override_colors/font_color = Color(1, 0.89, 0.42, 1)
+theme_override_font_sizes/font_size = 15
+text = "🎹 PRUEBA EL CUATRO AQUÍ (pulsa J, K, L, I y cierra con Espacio):"
+
+[node name="LabelPractica" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina1/CajaPractica"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 38.0
+offset_right = 970.0
+offset_bottom = 70.0
+theme_override_colors/font_color = Color(0.75, 0.95, 1, 1)
+theme_override_font_sizes/font_size = 17
+text = "Intenta por ejemplo:  J  L  L  J  + Espacio  (Golpe de Gabán)"
+
+[node name="Pagina2" type="Control" parent="UI/PanelBorde/PanelFondo/Contenido"]
+visible = false
+layout_mode = 0
+offset_right = 1036.0
+offset_bottom = 416.0
+
+[node name="AtaquesTitulo" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina2"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 500.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(1, 0.85, 0.32, 1)
+theme_override_font_sizes/font_size = 20
+text = "⚔️ ATAQUES VÁLIDOS (Furia enemigo +1)"
+
+[node name="AtaquesLista" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina2"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 58.0
+offset_right = 506.0
+offset_bottom = 300.0
+theme_override_colors/font_color = Color(0.94, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "1. Golpe de Gabán  (15 daño)
+    Teclas:  J  L  L  J  + Espacio   (T D D T F)
+    → Proyectil único veloz hacia tu dirección.
+
+2. Contrapunteo Libre  (25 daño)
+    Teclas:  J  L  (K  L  J)+  + Espacio   (T D (S D T)+ F)
+    → Ráfaga de 3 notas consecutivas. Ej: J L K L J
+
+3. Golpe de Pajarillo  (30 daño)
+    Teclas:  I  K  L  I  + Espacio   (M S D M F)
+    → Abanico triple de notas de alto impacto."
+autowrap_mode = 3
+
+[node name="DefensaTitulo" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina2"]
+layout_mode = 0
+offset_left = 532.0
+offset_top = 18.0
+offset_right = 1012.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.45, 0.94, 1, 1)
+theme_override_font_sizes/font_size = 20
+text = "🛡️ DEFENSA Y CALMA (Furia enemigo -1)"
+
+[node name="DefensaLista" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina2"]
+layout_mode = 0
+offset_left = 532.0
+offset_top = 58.0
+offset_right = 1012.0
+offset_bottom = 300.0
+theme_override_colors/font_color = Color(0.94, 0.96, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "4. Seis por Derecho  (Parry defensivo)
+    Teclas:  J  K  L  J  + Espacio   (T S D T F)
+    → Escudo armónico que bloquea los proyectiles del turno.
+
+5. Zumbe y Zumbe  (Esquive rítmico)
+    Teclas:  K  L  K  L  + Espacio   (S D S D F)
+    → Postura evasiva que anula los disparos de ese turno.
+
+6. Tonada de Sabana  (Calma)
+    Teclas:  J  I  K  J  + Espacio   (T M S T F)
+    → Nota serena que reduce la Furia de El Silbón."
+autowrap_mode = 3
+
+[node name="CajaError" type="ColorRect" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina2"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 316.0
+offset_right = 1012.0
+offset_bottom = 396.0
+color = Color(0.18, 0.06, 0.10, 0.95)
+
+[node name="TextoError" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina2/CajaError"]
+layout_mode = 0
+offset_left = 18.0
+offset_top = 12.0
+offset_right = 970.0
+offset_bottom = 68.0
+theme_override_colors/font_color = Color(1, 0.72, 0.72, 1)
+theme_override_font_sizes/font_size = 16
+text = "⚠️ DESAFINACIÓN (Error sintáctico ANTLR4): si envías una secuencia fuera de las 6 reglas, suenan cuerdas desafinadas, haces 0 daño, quedas INMOVILIZADO 1 segundo y El Silbón gana +2 de Furia."
+autowrap_mode = 3
+
+[node name="Pagina3" type="Control" parent="UI/PanelBorde/PanelFondo/Contenido"]
+visible = false
+layout_mode = 0
+offset_right = 1036.0
+offset_bottom = 416.0
+
+[node name="SilbonTitulo" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina3"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 18.0
+offset_right = 760.0
+offset_bottom = 48.0
+theme_override_colors/font_color = Color(0.95, 0.38, 0.56, 1)
+theme_override_font_sizes/font_size = 20
+text = "👻 EL SILBÓN Y SU MÁQUINA DE TURING"
+
+[node name="SilbonTexto" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina3"]
+layout_mode = 0
+offset_left = 24.0
+offset_top = 56.0
+offset_right = 760.0
+offset_bottom = 396.0
+theme_override_colors/font_color = Color(0.94, 0.94, 0.98, 1)
+theme_override_font_sizes/font_size = 16
+text = "1. Persecución y Ataque Cuerpo a Cuerpo (-8 HP)
+• El Silbón te sigue por toda la sabana con breves pausas de descanso.
+• ¡Cuidado al acercarte demasiado! Te dará un zarpazo directo cuerpo a cuerpo que ignora la defensa del Cuatro.
+
+2. Decisiones Tácticas de la Máquina de Turing (al cerrar un compás)
+• ⚡ ATAQUE_RAPIDO (10 daño): Doble corte veloz hacia tu posición.
+• 💀 ATAQUE_PESADO (20 daño): Si su Furia sube a 2 o más, marca un cono rojo de peligro y dispara 3 calaveras en abanico.
+• 🛡️ BLOQUEO (0 daño): Al usar Defensa (Seis por Derecho / Zumbe), alza su manto espectral.
+• ☠️ CASTIGO (35 daño): Si repites la misma acción 3 veces seguidas o desafinas una secuencia, desata una ráfaga morada letal.
+
+💡 CLAVE PARA GANAR: Mantén distancia, alterna ataques con Tonada de Sabana o Defensa, apunta hacia él al disparar y sal del cono cuando te telegrafíe."
+autowrap_mode = 3
+
+[node name="SpriteSilbonDemo" type="AnimatedSprite2D" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina3"]
+texture_filter = 1
+position = Vector2(900, 224)
+scale = Vector2(3.1, 3.1)
+sprite_frames = ExtResource("4_silbon")
+animation = &"idle_left"
+autoplay = "idle_left"
+
+[node name="SilbonEtiqueta" type="Label" parent="UI/PanelBorde/PanelFondo/Contenido/Pagina3"]
+layout_mode = 0
+offset_left = 800.0
+offset_top = 342.0
+offset_right = 1000.0
+offset_bottom = 374.0
+theme_override_colors/font_color = Color(0.88, 0.62, 1, 1)
+theme_override_font_sizes/font_size = 16
+text = "El Silbón (100 HP)"
+horizontal_alignment = 1
+
+[node name="BotonMenu" type="Button" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 28.0
+offset_top = 550.0
+offset_right = 212.0
+offset_bottom = 598.0
+theme_override_font_sizes/font_size = 16
+text = "🏠 Menú Principal"
+
+[node name="BotonAnterior" type="Button" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 270.0
+offset_top = 550.0
+offset_right = 414.0
+offset_bottom = 598.0
+theme_override_font_sizes/font_size = 16
+text = "← Anterior"
+
+[node name="LabelPagina" type="Label" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 422.0
+offset_top = 550.0
+offset_right = 562.0
+offset_bottom = 598.0
+theme_override_colors/font_color = Color(0.86, 0.90, 0.98, 1)
+theme_override_font_sizes/font_size = 16
+text = "Página 1 / 3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="BotonSiguiente" type="Button" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 570.0
+offset_top = 550.0
+offset_right = 714.0
+offset_bottom = 598.0
+theme_override_font_sizes/font_size = 16
+text = "Siguiente →"
+
+[node name="BotonJugar" type="Button" parent="UI/PanelBorde/PanelFondo"]
+layout_mode = 0
+offset_left = 780.0
+offset_top = 550.0
+offset_right = 1064.0
+offset_bottom = 598.0
+theme_override_font_sizes/font_size = 18
+text = "⚔️ ¡EMPEZAR JUEGO!"
