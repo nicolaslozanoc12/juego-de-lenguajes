@@ -53,11 +53,11 @@ shader_parameter/speed = 2.6
 shader_parameter/strength = 5.5
 shader_parameter/phase = 5.6
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_n2usc"]
-radius = 20.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_silbon"]
+size = Vector2(120, 120)
 
-[sub_resource type="CircleShape2D" id="CircleShape2D_lha63"]
-radius = 18.0
+[sub_resource type="RectangleShape2D" id="RectangleShape2D_llanero"]
+size = Vector2(44, 44)
 
 [node name="CombatArena" type="Node2D" unique_id=1346323953]
 script = ExtResource("1_xonij")
@@ -194,8 +194,7 @@ sprite_frames = ExtResource("11_724mq")
 animation = &"idle_down"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="ElSilbon" unique_id=1090080999]
-position = Vector2(0, 22)
-shape = SubResource("CircleShape2D_n2usc")
+shape = SubResource("RectangleShape2D_silbon")
 
 [node name="Llanero" type="CharacterBody2D" parent="." unique_id=993502081]
 position = Vector2(300, 520)
@@ -208,8 +207,8 @@ sprite_frames = ExtResource("13_vw413")
 animation = &"idle_down_right"
 
 [node name="CollisionShape2D" type="CollisionShape2D" parent="Llanero" unique_id=640883226]
-position = Vector2(0, 12)
-shape = SubResource("CircleShape2D_lha63")
+position = Vector2(0, 6)
+shape = SubResource("RectangleShape2D_llanero")
 
 [node name="Luciernagas" type="CPUParticles2D" parent="." unique_id=409188273]
 position = Vector2(640, 440)
