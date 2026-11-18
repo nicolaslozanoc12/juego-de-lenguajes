@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://ckvlkt8qh5axi"
-path="res://.godot/imported/llanero.png-6e8c0f96ab527ddf3dc4d928dfb49f4d.ctex"
+uid="uid://505s500y7yoq"
+path="res://.godot/imported/saman_mediano.png-4334866ea49b16b9b17f4ab76d7908bc.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/llanero.png"
-dest_files=["res://.godot/imported/llanero.png-6e8c0f96ab527ddf3dc4d928dfb49f4d.ctex"]
+source_file="res://assets/sprites/horizonte/saman_mediano.png"
+dest_files=["res://.godot/imported/saman_mediano.png-4334866ea49b16b9b17f4ab76d7908bc.ctex"]
 
 [params]
 

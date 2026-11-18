@@ -6,10 +6,12 @@ signal conexion_establecida
 
 const HOST := "127.0.0.1"
 const PORT := 8765
+const CONNECT_TIMEOUT_SEC := 1.5
 const RETRY_INTERVAL_SEC := 2.0
 const SERVER_WARNING := "Servidor lógico desconectado. Inicie python -m backend.main"
 
 var _peer: StreamPeerTCP
+var _connecting_elapsed: float = 0.0
 var _retry_timer: float = 0.0
 var _response_buffer: PackedByteArray = PackedByteArray()
 var _requests_pending: Array[PackedByteArray] = []
@@ -29,6 +31,7 @@ func _process(delta: float) -> void:
 	_peer.poll()
 	match _peer.get_status():
 		StreamPeerTCP.STATUS_CONNECTED:
+			_connecting_elapsed = 0.0
 			if not _is_connected:
 				_is_connected = true
 				_warning_shown = false
@@ -36,15 +39,35 @@ func _process(delta: float) -> void:
 				_enviar_pendientes()
 			_leer_respuestas()
 		StreamPeerTCP.STATUS_CONNECTING:
-			pass
+			_connecting_elapsed += delta
+			if _connecting_elapsed >= CONNECT_TIMEOUT_SEC:
+				_peer.disconnect_from_host()
+				_marcar_desconectado()
 		StreamPeerTCP.STATUS_ERROR, StreamPeerTCP.STATUS_NONE:
+			_connecting_elapsed = 0.0
 			_marcar_desconectado()
 			_reintentar_si_corresponde(delta)
 
 
 func enviar_secuencia(secuencia: String) -> void:
+	if _peer == null:
+		advertencia.emit(SERVER_WARNING)
+		return
+
+	_peer.poll()
+	var status := _peer.get_status()
+	if status != StreamPeerTCP.STATUS_CONNECTED and status != StreamPeerTCP.STATUS_CONNECTING:
+		_marcar_desconectado()
+		advertencia.emit(SERVER_WARNING)
+		return
+
 	var request := {"secuencia": secuencia}
 	var line := JSON.stringify(request) + "\n"
+	if status == StreamPeerTCP.STATUS_CONNECTING:
+		# Conserva solo la última petición si la conexión acaba de iniciar en este frame
+		_requests_pending = [line.to_utf8_buffer()]
+		return
+
 	_requests_pending.append(line.to_utf8_buffer())
 	_enviar_pendientes()
 
@@ -52,6 +75,7 @@ func enviar_secuencia(secuencia: String) -> void:
 func _intentar_conexion() -> void:
 	_peer = StreamPeerTCP.new()
 	var error := _peer.connect_to_host(HOST, PORT)
+	_connecting_elapsed = 0.0
 	_retry_timer = RETRY_INTERVAL_SEC
 	if error != OK:
 		_marcar_desconectado()
@@ -65,6 +89,8 @@ func _reintentar_si_corresponde(delta: float) -> void:
 
 func _marcar_desconectado() -> void:
 	_is_connected = false
+	_requests_pending.clear()
+	_response_buffer.clear()
 	if not _warning_shown:
 		_warning_shown = true
 		advertencia.emit(SERVER_WARNING)
