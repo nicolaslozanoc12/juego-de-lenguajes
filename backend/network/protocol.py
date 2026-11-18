@@ -31,6 +31,7 @@ def process_request(payload: str, controller: CombatController) -> Dict[str, Any
     if isinstance(vida_enemigo, (int, float)) and not isinstance(vida_enemigo, bool):
         controller.state.vida_enemigo = max(0, min(100, int(vida_enemigo)))
     response = controller.process(request["secuencia"])
+    response["contrato_version"] = "1.0"
     return response
 
 

@@ -6,10 +6,10 @@ Esta guía explica de forma sencilla y exacta cómo funciona la **Máquina de Tu
 
 ## 1. La idea central: ¿Qué hace ANTLR y qué hace la Máquina de Turing?
 
-Un error común al revisar el proyecto es pensar que la Máquina de Turing lee acordes (`T`, `S`, `D`, `M`, `F`). **En el juego real no funciona así**, sino en dos pasos separados:
+Un error común al revisar el proyecto es pensar que la Máquina de Turing lee las teclas del jugador (`J`, `K`, `L`, `I`, `Espacio`) o los tokens de la gramática (`T`, `S`, `D`, `M`, `F`). **En el juego real no funciona así**, sino en dos pasos separados:
 
 1. **Primero actúa ANTLR4 (`CuatroLlanero.g4` + `parser.py`):**
-   - Lee la secuencia de acordes que tocaste con el cuatro (por ejemplo `"TDDTF"`).
+   - Lee la secuencia normalizada que corresponde a las teclas que tocaste con el cuatro (por ejemplo, `J L L J Espacio` se convierte en `"TDDTF"`).
    - Comprueba si es un golpe válido y lo **resume en un solo símbolo** (`accion`):
      - **`A`** = Ataque (*Gabán*, *Pajarillo*, *Contrapunteo Libre*)
      - **`D`** = Defensa (*Seis por Derecho*, *Zumbe y Zumbe*)
@@ -22,7 +22,7 @@ Un error común al revisar el proyecto es pensar que la Máquina de Turing lee a
 
 ```mermaid
 flowchart LR
-    T["Teclas en Godot\n(J L L J Espacio)"] -->|"JSON: {'secuencia': 'TDDTF'}"| ANTLR["1. Parser ANTLR4\n(¿Es golpe válido?)"]
+    T["Teclas en Godot\n(J L L J Espacio)"] -->|"Normaliza a TDDTF"| ANTLR["1. Parser ANTLR4\n(¿Es golpe válido?)"]
     ANTLR -->|"Símbolo único:\nA, D, C o E"| MT["2. Máquina de Turing\n(3 Cintas L, R, S)"]
     MT -->|"Decisión de El Silbón:\nATAQUE_RAPIDO / PESADO / BLOQUEO / CASTIGO"| Combat["3. CombatController\n(Calcula vidas y daños)"]
     Combat -->|"Snapshot JSON"| Godot["4. Godot\n(Proyectiles, barras y HUD)"]
@@ -57,7 +57,7 @@ La clase `MultiTapeTuringMachine` en [`turing.py`](../../backend/formal/turing/t
 
 ## 3. Estados y Reglas de Transición ($\delta$)
 
-Al iniciar la partida, la máquina arranca en el estado inicial **`qObservacion`** (en el archivo JFLAP se llama **`qInicio`**). En cada turno evalúa la función `_transicion_delta(...)` siguiendo **este orden estricto de prioridad**:
+Al iniciar la partida, la máquina arranca en el estado inicial **`qInicio`**, igual que en el archivo JFLAP oficial. En cada turno evalúa la función `_transicion_delta(...)` siguiendo **este orden estricto de prioridad**:
 
 ```mermaid
 flowchart TD
@@ -84,7 +84,7 @@ flowchart TD
 
 ## 4. Traza paso a paso de una partida de ejemplo
 
-Supongamos que vas jugando los siguientes turnos desde el inicio (`estado = qObservacion`, `cinta1 = []`, `cinta2 = ["0", "0"]`, `cinta3 = []`):
+Supongamos que vas jugando los siguientes turnos desde el inicio (`estado = qInicio`, `cinta1 = []`, `cinta2 = ["0", "0"]`, `cinta3 = []`):
 
 | Turno | Secuencia tocada | Salida ANTLR | `prev_accion` | Nueva `furia` | Nueva `rep` | Estado / Decisión de Turing | Cintas después del turno (`[...]` = cabezal) | Daño al jugador |
 | :---: | :--- | :---: | :---: | :---: | :---: | :--- | :--- | :---: |
@@ -114,7 +114,7 @@ Aquí suele haber confusión al abrir JFLAP. Solo **uno** representa la Máquina
 ### Cómo probar el `.jff` oficial en JFLAP
 1. Abre [`backend/formal/turing/maquina_turing_enemigo.jff`](../../backend/formal/turing/maquina_turing_enemigo.jff) en JFLAP y selecciona **Input → Multiple Run**.
 2. Ingresa 3 cintas:
-   - **Cinta 1:** una acción (`A`, `D`, `C` o `E`).
+   - **Cinta 1:** una acción (`A`, `D`, `C` o `E`), no una tecla ni un token `T`, `S`, `D`, `M`, `F`.
    - **Cinta 2:** la furia actual (`0`, `1`, `2` o `3`).
    - **Cinta 3:** déjala **vacía**.
 3. Como JFLAP solo permite **1 carácter por celda**, escribe la decisión con una letra:
@@ -124,6 +124,14 @@ Aquí suele haber confusión al abrir JFLAP. Solo **uno** representa la Máquina
    - **`C`** = `CASTIGO`
 
 *(Nota importante: JFLAP simula un turno aislado porque reinicia las cintas en cada ejecución; en Python `MultiTapeTuringMachine` conserva además el historial de las cintas y el contador `repeticion` entre un turno y otro.)*
+
+Por esa razón, el `.jff` oficial representa las transiciones por acción y furia:
+con una entrada aislada puede calcular las decisiones `R/P/B/C`, pero no puede
+determinar por sí mismo si la acción es la tercera repetición consecutiva.
+Esa condición se evalúa en `turing.py` mediante la Cinta 1 y el contador
+`repeticion` de la Cinta 2. Una repetición activa `qCastigo` antes de las reglas
+de defensa o furia, mientras que JFLAP debe interpretarse como una proyección
+de un turno sin historial previo.
 
 ---
 
