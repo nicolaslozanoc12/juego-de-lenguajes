@@ -1,6 +1,7 @@
 extends Node2D
 
 const CuatroControllerScript := preload("res://scripts/combat/CuatroController.gd")
+const NetworkClientScript := preload("res://scripts/network/NetworkClient.gd")
 
 ## Área interior segura delimitada por el muro espectral cerrado (arriba, abajo, izq, der).
 const ARENA_RECT := Rect2(96, 250, 1088, 392)
@@ -8,10 +9,12 @@ const ARENA_RECT := Rect2(96, 250, 1088, 392)
 @onready var llanero: CharacterBody2D = $Llanero
 @onready var muro_espectral: TileMapLayer = $MuroEspectral
 @onready var cuatro_controller: CuatroControllerScript = $CuatroController
+@onready var network_client: NetworkClientScript = $NetworkClient
 @onready var musica_ambiente: AudioStreamPlayer = $MusicaAmbiente
 @onready var label_estado: Label = $UI/LabelEstado
 
 var time_passed: float = 0.0
+var _esperando_respuesta_red: bool = false
 
 
 func _ready() -> void:
@@ -22,6 +25,12 @@ func _ready() -> void:
 		cuatro_controller.secuencia_enviada.connect(_on_cuatro_secuencia_enviada)
 		cuatro_controller.secuencia_limpiada.connect(_on_cuatro_secuencia_limpiada)
 		cuatro_controller.input_bloqueado_cambiado.connect(_on_cuatro_bloqueo_cambiado)
+	if network_client:
+		if cuatro_controller:
+			cuatro_controller.secuencia_enviada.connect(network_client.enviar_secuencia)
+		network_client.combate_resuelto.connect(_on_combate_resuelto)
+		network_client.advertencia.connect(_on_network_advertencia)
+		network_client.conexion_establecida.connect(_on_network_conectado)
 
 
 func _process(delta: float) -> void:
@@ -51,6 +60,7 @@ func _on_cuatro_acorde_tocado(_token: String, _secuencia_actual: String) -> void
 
 
 func _on_cuatro_secuencia_enviada(secuencia: String) -> void:
+	_esperando_respuesta_red = network_client != null
 	if label_estado:
 		label_estado.text = "🚀 Enviado: %s [Espacio] (%s) | Esperando turno..." % [
 			cuatro_controller.ultima_cadena_teclas_enviada,
@@ -68,9 +78,69 @@ func _on_cuatro_secuencia_limpiada() -> void:
 
 
 func _on_cuatro_bloqueo_cambiado(bloqueado: bool) -> void:
-	if not bloqueado and label_estado:
-		label_estado.text = "✅ Listo | Última cadena: %s [Espacio] | Vida Llanero: %d" % [
-			cuatro_controller.ultima_cadena_teclas_enviada,
-			llanero.health if llanero else 100,
-		]
+	if not bloqueado and not _esperando_respuesta_red and label_estado and cuatro_controller:
+		if not label_estado.text.begins_with("⚔️") and not label_estado.text.begins_with("🎸✖") and not label_estado.text.begins_with("⚠️") and not label_estado.text.begins_with("🏆") and not label_estado.text.begins_with("💀"):
+			label_estado.text = "✅ Listo | Última cadena: %s [Espacio] | Vida Llanero: %d" % [
+				cuatro_controller.ultima_cadena_teclas_enviada,
+				llanero.health if llanero else 100,
+			]
+			label_estado.modulate = Color(0.7, 1.0, 0.75)
+
+
+func _on_combate_resuelto(data: Dictionary) -> void:
+	_esperando_respuesta_red = false
+	if llanero and data.has("vida_jugador"):
+		llanero.health = int(data["vida_jugador"])
+	if cuatro_controller:
+		cuatro_controller.desbloquear_input()
+	if not label_estado:
+		return
+
+	var estado_partida := str(data.get("estado", "JUGANDO"))
+	if data.get("valido", false):
+		if estado_partida == "VICTORIA":
+			label_estado.text = "🏆 ¡VICTORIA! Venciste a El Silbón con %s | Llanero: %s HP" % [
+				data.get("golpe", "tu música"),
+				data.get("vida_jugador", "?"),
+			]
+			label_estado.modulate = Color(1.0, 0.92, 0.45)
+		elif estado_partida == "DERROTA":
+			label_estado.text = "💀 DERROTA... El Silbón te venció (%s) | Llanero: 0 HP" % data.get("enemigo_accion", "")
+			label_estado.modulate = Color(1.0, 0.4, 0.4)
+		else:
+			label_estado.text = "⚔️ %s | Silbón: %s | Llanero: %s HP | Silbón: %s HP" % [
+				data.get("golpe", "Turno resuelto"),
+				data.get("enemigo_accion", "-"),
+				data.get("vida_jugador", "?"),
+				data.get("vida_enemigo", "?"),
+			]
+			label_estado.modulate = Color(0.7, 1.0, 0.75)
+	elif data.has("vida_jugador"):
+		if estado_partida == "DERROTA":
+			label_estado.text = "💀 DERROTA por cuerda desafinada (%s) | Llanero: 0 HP" % data.get("enemigo_accion", "CASTIGO")
+		else:
+			label_estado.text = "🎸✖ Desafinado | Silbón: %s (-%s HP) | Llanero: %s HP | Silbón: %s HP" % [
+				data.get("enemigo_accion", "CASTIGO"),
+				data.get("dano_jugador", 35),
+				data.get("vida_jugador", "?"),
+				data.get("vida_enemigo", "?"),
+			]
+		label_estado.modulate = Color(1.0, 0.45, 0.45)
+	else:
+		label_estado.text = "❌ %s" % data.get("error", "El servidor rechazó la secuencia.")
+		label_estado.modulate = Color(1.0, 0.55, 0.55)
+
+
+func _on_network_advertencia(mensaje: String) -> void:
+	_esperando_respuesta_red = false
+	if cuatro_controller:
+		cuatro_controller.desbloquear_input()
+	if label_estado:
+		label_estado.text = "⚠️ %s" % mensaje
+		label_estado.modulate = Color(1.0, 0.65, 0.35)
+
+
+func _on_network_conectado() -> void:
+	if label_estado:
+		label_estado.text = "🔌 Servidor lógico conectado (127.0.0.1:8765)."
 		label_estado.modulate = Color(0.7, 1.0, 0.75)

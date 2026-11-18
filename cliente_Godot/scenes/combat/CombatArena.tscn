@@ -15,6 +15,7 @@
 [ext_resource type="SpriteFrames" path="res://assets/sprites/llanero_frames.tres" id="13_vw413"]
 [ext_resource type="Script" path="res://scripts/combat/CuatroController.gd" id="14_fxrfm"]
 [ext_resource type="AudioStream" path="res://assets/audio/musica/ambiente_pelea_silbon.wav" id="15_0urjw"]
+[ext_resource type="Script" uid="uid://chnuqipoyeuii" path="res://scripts/network/NetworkClient.gd" id="16_network"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_om66t"]
 shader = ExtResource("6_pu5s8")
@@ -226,6 +227,9 @@ color = Color(0.85, 1, 0.5, 0.72)
 
 [node name="CuatroController" type="Node" parent="." unique_id=99970634]
 script = ExtResource("14_fxrfm")
+
+[node name="NetworkClient" type="Node" parent="." unique_id=181240019]
+script = ExtResource("16_network")
 
 [node name="MusicaAmbiente" type="AudioStreamPlayer" parent="." unique_id=1933533551]
 stream = ExtResource("15_0urjw")

@@ -21,6 +21,13 @@ const TOKEN_POR_ACCION := {
 	"cuatro_menor": "M",
 }
 
+const TOKEN_POR_TECLA_FISICA := {
+	KEY_J: "T",
+	KEY_K: "S",
+	KEY_L: "D",
+	KEY_I: "M",
+}
+
 const TECLA_POR_TOKEN := {
 	"T": "J",
 	"S": "K",
@@ -64,9 +71,25 @@ func _inicializar_reproductores() -> void:
 		_reproductores[token] = player
 
 
-func _unhandled_input(event: InputEvent) -> void:
+func _input(event: InputEvent) -> void:
 	if input_bloqueado or event.is_echo():
 		return
+
+	if event is InputEventKey and event.pressed:
+		var tecla := event as InputEventKey
+		var codigo_tecla := tecla.physical_keycode if tecla.physical_keycode != 0 else tecla.keycode
+		if TOKEN_POR_TECLA_FISICA.has(codigo_tecla):
+			registrar_acorde(TOKEN_POR_TECLA_FISICA[codigo_tecla])
+			get_viewport().set_input_as_handled()
+			return
+		if codigo_tecla == KEY_BACKSPACE:
+			limpiar_secuencia()
+			get_viewport().set_input_as_handled()
+			return
+		if codigo_tecla == KEY_SPACE:
+			cerrar_y_enviar_secuencia()
+			get_viewport().set_input_as_handled()
+			return
 
 	for accion: String in TOKEN_POR_ACCION.keys():
 		if event.is_action_pressed(accion):
