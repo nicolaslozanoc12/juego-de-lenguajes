@@ -6,19 +6,19 @@ Este documento define la base teórica y práctica para el proyecto final de **L
 
 ## 1. El Cuatro Llanero como Lenguaje Formal (Jugador)
 
-En lugar de exigir conocimientos musicales reales, abstraemos la ejecución del cuatro llanero en un **alfabeto de tokens** (acordes y golpes de mano derecha) y **reglas sintácticas** basadas en los "golpes" tradicionales del joropo.
+En lugar de exigir conocimientos musicales reales, el jugador introduce las teclas `J`, `K`, `L` e `I` y cierra con `Espacio`. El cliente convierte esas teclas al **alfabeto normalizado de tokens** `T`, `S`, `D`, `M`, `F`, que es el que recibe ANTLR y sobre el que se escriben las reglas sintácticas basadas en los "golpes" tradicionales del joropo.
 
 ### 1.1. Análisis Léxico (Alfabeto / Tokens)
 
 El jugador cuenta con **5 entradas básicas** (mapeadas a teclas del teclado):
 
-| Token | Nombre Musical (Simplificado) | Tecla en Juego | Función en la Gramática |
+| Token normalizado | Nombre Musical (Simplificado) | Tecla de entrada | Función en la Gramática |
 | :--- | :--- | :---: | :--- |
 | **`T`** | **Tónica** (Re Mayor) | `J` | Acorde base de inicio o reposo armónico. |
 | **`S`** | **Subdominante** (Sol Mayor) | `K` | Acorde de transición o preparación defensiva/utilidad. |
 | **`D`** | **Dominante** (La 7ma) | `L` | Acorde de tensión máxima (impulsa ataques y combos). |
 | **`M`** | **Menor Relativo** (Si menor) | `I` | Acorde menor para el *Golpe de Pajarillo* y la *Tonada*. |
-| **`F`** | **Frenao / Chasquido** (Remate) | `Espacio` | **Delimitador de fin de cadena (`F`).** Cierra el compás y envía la secuencia al parser. |
+| **`F`** | **Frenao / Chasquido** (Remate) | `Espacio` | **Delimitador de fin de cadena (`F`).** Cierra el compás y envía la secuencia normalizada al parser. |
 
 *(El movimiento del llanero utiliza `WASD` / Flechas y `Backspace` limpia los acordes acumulados antes de presionar `Espacio`.)*
 
@@ -114,6 +114,8 @@ FRENAO    : 'F' ;
 
 WS        : [ \t\r\n]+ -> skip ;
 ```
+
+La separación entre representaciones es intencional: `J`, `K`, `L`, `I` y `Espacio` son la entrada física del jugador; `T`, `S`, `D`, `M` y `F` son los terminales normalizados de la gramática. Después de validar la cadena, ANTLR no envía esos tokens a la máquina de Turing: traduce el golpe a una sola acción, `A`, `D`, `C` o `E`.
 
 ### 1.4. Manejo de Errores Sintácticos en el Gameplay
 - **Cadena Válida:** Si ANTLR parsea la entrada sin errores, `_GolpeListener` identifica la regla alcanzada (`gaban`, `pajarillo`, `seisPorDerecho`, `zumbeYZumbe`, `tonada` o `contrapunteo`), clasifica la acción (`A`, `D` o `C`) y el controlador aplica el efecto del turno.

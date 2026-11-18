@@ -43,7 +43,7 @@ Videojuego 2D en **Godot 4.7.2** conectado por sockets TCP locales a un servidor
 ## Controles y gramática del Cuatro (`CuatroLlanero.g4`)
 
 - **Movimiento del Llanero (8 direcciones):** `WASD` o Flechas. *(Tocar el muro espectral morado aplica rebote al centro y `-5 HP`.)*
-- **Acordes del Cuatro (audio inmediato en local):** `J` = `T` (Tónica), `K` = `S` (Subdominante), `L` = `D` (Dominante), `I` = `M` (Menor), `Espacio` = `F` (Frenao/Enviar), `Backspace` = Limpiar secuencia.
+- **Acordes del Cuatro (audio inmediato en local):** el jugador pulsa `J`, `K`, `L`, `I` y `Espacio`; Godot los normaliza a los tokens de gramática `T`, `S`, `D`, `M`, `F`. Después de validar, la máquina de Turing recibe únicamente `A`, `D`, `C` o `E`. `Backspace` limpia la secuencia.
 
 | Golpe | Combinación en teclado | Tokens | Efecto |
 | :--- | :--- | :--- | :--- |

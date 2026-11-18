@@ -2,6 +2,8 @@ import json
 import socket
 import threading
 import unittest
+import xml.etree.ElementTree as ET
+from pathlib import Path
 
 from backend.formal.grammar.parser import validar_secuencia
 from backend.formal.turing.turing import MultiTapeTuringMachine, TuringStep
@@ -51,6 +53,36 @@ class ParserTests(unittest.TestCase):
 
 
 class TuringTests(unittest.TestCase):
+    def test_jflap_projection_matches_isolated_turn_transitions(self):
+        jff_path = Path(__file__).resolve().parent.parent / "formal" / "turing" / "maquina_turing_enemigo.jff"
+        root = ET.parse(jff_path).getroot()
+
+        self.assertEqual(root.find("./tapes").text, "3")
+
+        states = {
+            state.attrib["name"]
+            for state in root.findall("./automaton/state")
+        }
+        self.assertEqual(states, {
+            "qInicio",
+            "qAtaqueRapido",
+            "qAtaquePesado",
+            "qBloqueo",
+            "qCastigo",
+        })
+
+        transitions = root.findall("./automaton/transition")
+        self.assertEqual(len(transitions), 16)
+
+        transitions_by_input = set()
+        for transition in transitions:
+            reads = transition.findall("read")
+            action = next(read.text for read in reads if read.attrib["tape"] == "1")
+            fury = next(read.text for read in reads if read.attrib["tape"] == "2")
+            transitions_by_input.add((action, fury))
+
+        self.assertEqual(len(transitions_by_input), 16)
+
     def test_tracks_three_tapes_and_head_positions(self):
         machine = MultiTapeTuringMachine()
         step = machine.step("A")
@@ -67,7 +99,7 @@ class TuringTests(unittest.TestCase):
 
     def test_explicit_states_and_transitions_across_actions(self):
         machine = MultiTapeTuringMachine()
-        self.assertEqual(machine.estado, "qObservacion")
+        self.assertEqual(machine.estado, "qInicio")
 
         self.assertEqual(machine.step("A").decision, "ATAQUE_RAPIDO")
         self.assertEqual(machine.estado, "qAtaqueRapido")
@@ -96,7 +128,7 @@ class TuringTests(unittest.TestCase):
         machine = MultiTapeTuringMachine()
         machine.step("A")
         trace = machine.format_trace()
-        self.assertIn("δ(qObservacion", trace)
+        self.assertIn("δ(qInicio", trace)
         self.assertIn("qAtaqueRapido", trace)
         self.assertIn("Cinta 1 [cab L=0]: [A]", trace)
         self.assertIn("Cinta 2 [cab R=0]: [1] 1", trace)
@@ -116,6 +148,7 @@ class CombatTests(unittest.TestCase):
         response = process_request(json.dumps({"secuencia": "TDDTF"}), CombatController())
         self.assertTrue(response["valido"])
         self.assertEqual(response["dano_enemigo"], 15)
+        self.assertEqual(response["contrato_version"], "1.0")
 
     def test_controller_returns_godot_json_snapshot(self):
         response = CombatController().process("TDDTF")

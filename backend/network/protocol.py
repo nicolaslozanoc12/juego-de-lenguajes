@@ -16,6 +16,7 @@ def process_request(payload: str, controller: CombatController) -> Dict[str, Any
     if "secuencia" not in request or not isinstance(request["secuencia"], str):
         raise ValueError("La petición requiere el campo secuencia como texto")
     response = controller.process(request["secuencia"])
+    response["contrato_version"] = "1.0"
     return response
 
 

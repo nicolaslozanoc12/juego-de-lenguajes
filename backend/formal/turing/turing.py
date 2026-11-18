@@ -68,7 +68,7 @@ class MultiTapeTuringMachine:
     """
 
     def __init__(self) -> None:
-        self.estado: str = "qObservacion"
+        self.estado: str = "qInicio"
         self.tape1: List[str] = []
         self.tape2: List[str] = ["0", "0"]
         self.tape3: List[str] = []
