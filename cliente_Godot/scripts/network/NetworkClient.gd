@@ -4,8 +4,8 @@ signal combate_resuelto(data: Dictionary)
 signal advertencia(mensaje: String)
 signal conexion_establecida
 
-const HOST := "127.0.0.1"
-const PORT := 8765
+@export var host: String = "127.0.0.1"
+@export var port: int = 8765
 const CONNECT_TIMEOUT_SEC := 1.5
 const RETRY_INTERVAL_SEC := 2.0
 const SERVER_WARNING := "Servidor lógico desconectado. Inicie python -m backend.main"
@@ -74,7 +74,7 @@ func enviar_secuencia(secuencia: String) -> void:
 
 func _intentar_conexion() -> void:
 	_peer = StreamPeerTCP.new()
-	var error := _peer.connect_to_host(HOST, PORT)
+	var error := _peer.connect_to_host(host, port)
 	_connecting_elapsed = 0.0
 	_retry_timer = RETRY_INTERVAL_SEC
 	if error != OK:

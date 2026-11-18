@@ -12,13 +12,15 @@ En lugar de exigir conocimientos musicales reales, abstraemos la ejecución del 
 
 El jugador cuenta con **5 entradas básicas** (mapeadas a teclas del teclado):
 
-| Token | Nombre Musical (Simplificado) | Tecla Sugerida | Función en la Gramática |
+| Token | Nombre Musical (Simplificado) | Tecla en Juego | Función en la Gramática |
 | :--- | :--- | :---: | :--- |
-| **`T`** | **Tónica** (ej. Re Mayor) | `A` / `J` | Acorde base de inicio o reposo armónico. |
-| **`S`** | **Subdominante** (ej. Sol Mayor) | `S` / `K` | Acorde de transición o preparación defensiva/curativa. |
-| **`D`** | **Dominante** (ej. La 7ma) | `D` / `L` | Acorde de tensión máxima (impulsa ataques y combos). |
-| **`M`** | **Menor Relativo** (ej. Si menor) | `W` / `U` | Acorde melancólico/recio para estados alterados o críticos. |
-| **`F`** | **Frenao / Chasquido** (Remate) | `Espacio` | **Delimitador de fin de cadena (EOF).** Envía la secuencia al parser. |
+| **`T`** | **Tónica** (Re Mayor) | `J` | Acorde base de inicio o reposo armónico. |
+| **`S`** | **Subdominante** (Sol Mayor) | `K` | Acorde de transición o preparación defensiva/utilidad. |
+| **`D`** | **Dominante** (La 7ma) | `L` | Acorde de tensión máxima (impulsa ataques y combos). |
+| **`M`** | **Menor Relativo** (Si menor) | `I` | Acorde menor para el *Golpe de Pajarillo* y la *Tonada*. |
+| **`F`** | **Frenao / Chasquido** (Remate) | `Espacio` | **Delimitador de fin de cadena (`F`).** Cierra el compás y envía la secuencia al parser. |
+
+*(El movimiento del llanero utiliza `WASD` / Flechas y `Backspace` limpia los acordes acumulados antes de presionar `Espacio`.)*
 
 ---
 
@@ -40,12 +42,12 @@ El lenguaje reconoce **6 estructuras gramaticales principales** (divididas en At
 4. **Zumbe y Zumbe (Esquive / Aturdimiento):**
    - **Secuencia:** `S -> D -> S -> D -> F`
    - **Efecto en juego:** Desorienta al enemigo e interrumpe su carga de ataque.
-5. **Tonada de Sabana (Curación / Buff):**
+5. **Tonada de Sabana (Reducción de Furia / Utilidad `C`):**
    - **Secuencia:** `T -> M -> S -> T -> F`
-   - **Efecto en juego:** El llanero recupera vida o calma el ambiente.
-6. **Contrapunteo Libre (Combo Recursivo / Ultimate):**
+   - **Efecto en juego:** Reduce en `1` la furia del enemigo en la Cinta 2 (`_FURIA_DELTA["C"] = -1`) sin infligir daño directo.
+6. **Contrapunteo Libre (Combo Recursivo):**
    - **Secuencia:** `T -> D -> [Ciclo Recursivo (S -> D -> T)]+ -> F`
-   - **Efecto en juego:** Mientras el jugador repita el patrón recursivo antes de presionar el *Frenao (`F`)*, el multiplicador de daño aumenta. Si se equivoca en un acorde antes de cerrar con `F`, pierde todo el combo.
+   - **Efecto en juego:** Ataque de `25` puntos de daño que acepta cualquier número $\ge 1$ de repeticiones de `S D T` antes de cerrar con *Frenao (`F`)*.
 
 ---
 
@@ -60,12 +62,12 @@ ejecucion
     ;
 
 golpe
-    : gaban          # AtaqueBasico
-    | pajarillo      # AtaqueFuerte
-    | seisPorDerecho # DefensaEscudo
-    | zumbeYZumbe    # DefensaAturdir
-    | tonada         # UtilidadCuracion
-    | contrapunteo   # AtaqueRecursivo
+    : gaban
+    | pajarillo
+    | seisPorDerecho
+    | zumbeYZumbe
+    | tonada
+    | contrapunteo
     ;
 
 // 1. Golpe de Gabán (Ataque básico)
@@ -114,20 +116,13 @@ WS        : [ \t\r\n]+ -> skip ;
 ```
 
 ### 1.4. Manejo de Errores Sintácticos en el Gameplay
-- **Cadena Válida:** Si ANTLR parsea la entrada sin errores, devuelve el nodo semántico (`#AtaqueBasico`, `#DefensaEscudo`, etc.) y el personaje ejecuta la animación y el sonido real del acorde.
-- **Error Léxico/Sintáctico:** Si el jugador presiona `F` con una combinación inválida (ej. `T T D F`), el `ErrorListener` de ANTLR captura el fallo, reproduce el sonido de una cuerda desafinada y aplica una penalización breve (enfriamiento de 1 segundo).
+- **Cadena Válida:** Si ANTLR parsea la entrada sin errores, `_GolpeListener` identifica la regla alcanzada (`gaban`, `pajarillo`, `seisPorDerecho`, `zumbeYZumbe`, `tonada` o `contrapunteo`), clasifica la acción (`A`, `D` o `C`) y el controlador aplica el efecto del turno.
+- **Error Léxico/Sintáctico:** Si el jugador presiona `Espacio` (`F`) con una combinación inválida (ej. `T T D F`), el `CuatroErrorListener` de ANTLR captura el fallo (`ERROR_SINTACTICO`), la Máquina de Turing recibe `E` en Cinta 1, **no quita vida al jugador (`dano_jugador = 0`)** e **inmoviliza al Llanero durante `1.0` segundo** en Godot.
 
 ---
 
- ### 2. Dinámica: Acción en Tiempo Real "con Ventanas de Reacción" (El punto medio ideal)
+ ### 2. Dinámica implementada en tiempo real
 
-  Tienes toda la razón: un combate por turnos estático le quita la gracia de tocar el cuatro, pero un juego de acción frenético puede hacer muy difícil tocar secuencias de 4 o 5 acordes sin equivocarse.
-
-  La solución ideal es un Combate en Tiempo Real con Telegrafía (estilo Dark Souls / Monster Hunter mezclado con Magicka):
-
-  1. Movimiento y Posicionamiento (Isométrico): Puedes mover a tu llanero por el escenario isométrico.
-  2. El Enemigo anuncia su intención (Telegrafía): El enemigo (por ejemplo, El Silbón) empieza a cargar un ataque durante 3 o 4 segundos (se ve un área roja en el suelo o un icono sobre su cabeza).
-  3. Tu respuesta con el Cuatro:
-      • Mientras estás parado o esquivando, presionas las teclas de los acordes (ej. J, K, L, U para los acordes y Espacio para el "Frenao" que envía la cadena a ANTLR).
-      • Si el enemigo va a lanzar un ataque rápido, tocas la gramática de Defensa / Contrapunteo antes de que te golpee para hacerle un Parry musical.
-      • Si el enemigo está vulnerable, tocas una gramática ofensiva larga (Pajarillo o Gabán) para hacerle daño en área.
+  1. **Movimiento y Posicionamiento (Top-Down 2D en 8 direcciones):** El Llanero se desplaza con `WASD` / Flechas dentro de una arena rectangular rodeada por el `MuroEspectral` (tocar sus bordes rebota al centro y resta `5` de vida).
+  2. **Ejecución musical inmediata (Fast-Path):** Mientras te mueves o posicionas, tocas los acordes con `J, K, L, I` (sonido instantáneo en local) y envías la cadena al presionar `Espacio` (`Frenao`). Si te equivocas antes de enviar, `Backspace` limpia la secuencia.
+  3. **Resolución Formal en Python:** Cada secuencia enviada con `Espacio` atraviesa el parser ANTLR4 y actualiza las 3 cintas de la Máquina de Turing del jefe (`El Silbón`), devolviendo el resultado completo del turno por TCP (`127.0.0.1:8765`).

@@ -1,6 +1,9 @@
 # Comparativa de Arquitectura: Godot (Cliente-Servidor) vs. Pygame (Monolito Python)
 
-Este documento analiza las dos opciones tecnológicas para desarrollar el videojuego 2D isométrico del proyecto final de **Lenguajes de Programación**, evaluando su integración con **ANTLR4** y la **Máquina de Turing Multicinta**.
+> [!NOTE]
+> **Decisión arquitectónica adoptada:** El equipo eligió la **Opción A (Godot Engine 4.7.2 + Backend en Python vía TCP en `127.0.0.1:8765`)**, evolucionando finalmente la cámara del escenario a una perspectiva **Top-Down 2D ortogonal (32×32 px)** en lugar de isométrica (ver [`mecanica_arena_combate_jefe.md`](./mecanica_arena_combate_jefe.md)).
+
+Este documento analiza las dos opciones tecnológicas evaluadas al inicio del proyecto final de **Lenguajes de Programación**, considerando su integración con **ANTLR4** y la **Máquina de Turing Multicinta**.
 
 ---
 

@@ -102,9 +102,9 @@ El servidor procesa el turno y devuelve inmediatamente una sola línea JSON con 
   "accion": "E",
   "error": "La secuencia no pertenece a la gramatica",
   "dano_enemigo": 0,
-  "dano_jugador": 35,
+  "dano_jugador": 0,
   "enemigo_accion": "CASTIGO",
-  "vida_jugador": 65,
+  "vida_jugador": 100,
   "vida_enemigo": 100,
   "estado": "JUGANDO",
   "cintas": {
@@ -128,13 +128,13 @@ El servidor procesa el turno y devuelve inmediatamente una sola línea JSON con 
 |---|---|---|---|
 | `valido` | `bool` | `true`, `false` | Indica si la secuencia pertenece a la gramática del cuatro |
 | `golpe` | `string` o `null` | `"Golpe de Gaban"`, `"Golpe de Pajarillo"`, `"Seis por Derecho"`, `"Zumbe y Zumbe"`, `"Tonada de Sabana"`, `"Contrapunteo Libre"` | Nombre del golpe musical reconocido |
-| `accion` | `string` | `"A"` (Ataque), `"D"` (Defensa), `"C"` (Curación), `"E"` (Error) | Clasificación de la acción que ingresa a la Máquina de Turing |
+| `accion` | `string` | `"A"` (Ataque), `"D"` (Defensa), `"C"` (Carga / Reducción de furia), `"E"` (Error) | Clasificación de la acción que ingresa a la Máquina de Turing |
 | `error` | `string` o `null` | Mensaje descriptivo o `null` | Detalle del error si `valido` es `false` |
 | `dano_enemigo` | `int` | $\ge 0$ | Puntos de vida que pierde el enemigo este turno |
-| `dano_jugador` | `int` | $\ge 0$ | Puntos de vida que pierde el jugador este turno (0 si usó Defensa exitosa) |
+| `dano_jugador` | `int` | $\ge 0$ | Puntos de vida que pierde el jugador este turno (`0` si usó Defensa o cometió error sintáctico `E`) |
 | `enemigo_accion`| `string` | `"ATAQUE_RAPIDO"`, `"ATAQUE_PESADO"`, `"BLOQUEO"`, `"CASTIGO"` | Decisión táctica tomada por la Máquina de Turing del jefe |
-| `vida_jugador` | `int` | `0` a `100` | Vida actual restante de Florentino |
-| `vida_enemigo` | `int` | `0` a `100` | Vida actual restante de El Espanto |
+| `vida_jugador` | `int` | `0` a `100` | Vida actual restante del Llanero |
+| `vida_enemigo` | `int` | `0` a `100` | Vida actual restante de El Silbón |
 | `estado` | `string` | `"JUGANDO"`, `"VICTORIA"`, `"DERROTA"` | Estado global de la partida |
 | `cintas` | `object` | Ver sección 6 | Contenido de las 3 cintas de la Máquina de Turing para el HUD |
 | `cabezales` | `object` | `{"L": int, "R": 0, "S": int}` | Posición actual de los cabezales en cada cinta |
@@ -142,8 +142,9 @@ El servidor procesa el turno y devuelve inmediatamente una sola línea JSON con 
 ### Resolución del turno
 
 El controlador combina la acción validada del jugador con la decisión de la
-Máquina de Turing. `Seis por Derecho` (`D`) anula el daño entrante como parry;
-un error sintáctico (`E`) siempre recibe el daño crítico de `35`, y los ataques
+Máquina de Turing. `Seis por Derecho` y `Zumbe y Zumbe` (`D`) anulan el daño entrante como parry;
+un error sintáctico (`E`) no quita vida (`dano_jugador = 0`) e inmoviliza al jugador durante `1.0` segundo en Godot;
+repetir 3 veces seguidas la misma acción activa el daño crítico de `35` (`CASTIGO`), y los ataques
 enemigos ordinarios infligen `10` (`ATAQUE_RAPIDO`) o `20`
 (`ATAQUE_PESADO`). El daño no puede reducir las vidas por debajo de cero. El
 estado de respuesta es `VICTORIA` si la vida enemiga llega a cero, `DERROTA` si

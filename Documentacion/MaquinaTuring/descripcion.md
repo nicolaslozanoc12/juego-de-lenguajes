@@ -1,5 +1,8 @@
 # Máquina de Turing del cuatro llanero
 
+> [!NOTE]
+> Los archivos de esta carpeta (`maquina_cuatro.jff` y `maquina_juego_multicinta.jff`) corresponden a los prototipos iniciales de diseño. La implementación definitiva conectada al servidor Python y al cliente Godot vive en [`backend/formal/turing/turing.py`](../../backend/formal/turing/turing.py) junto con su modelo JFLAP actualizado en [`backend/formal/turing/maquina_turing_enemigo.jff`](../../backend/formal/turing/maquina_turing_enemigo.jff) (explicado en [`backend/formal/turing/README.md`](../../backend/formal/turing/README.md)).
+
 El archivo [`maquina_cuatro.jff`](./maquina_cuatro.jff) contiene una máquina de Turing determinista de una cinta, compatible con JFLAP. Su función es validar la cadena que llega después de que el jugador presiona el `Frenao (F)`.
 
 ## Alfabeto

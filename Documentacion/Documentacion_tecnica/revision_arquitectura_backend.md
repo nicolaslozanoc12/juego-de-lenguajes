@@ -34,7 +34,7 @@ flowchart TD
 | Módulo | Responsabilidad | Fundamentación Teórica |
 |---|---|---|
 | [`backend/network/`](../../backend/network/) | Servidor TCP y serialización JSON delimitada por salto de línea | Comunicación inter-procesos (IPC) sin sobrecarga HTTP |
-| [`backend/game/`](../../backend/game/) | Controlador de vidas, daño y resolución de turnos | Reglas del juego (Matriz de daño y parry) |
+| [`backend/game/`](../../backend/game/) | Controlador de vidas, daño y resolución de turnos | Reglas del juego (`15`/`25`/`30` daño, parry en `D`, `0` daño en `E` e inmovilización `1.0 s` en Godot, `35` en `CASTIGO` por repetición) |
 | [`backend/formal/grammar/`](../../backend/formal/grammar/) | Analizador sintáctico de los golpes del cuatro llanero | **Chomsky Tipo 2:** Gramática Libre de Contexto en ANTLR4 |
 | [`backend/formal/turing/`](../../backend/formal/turing/) | Autómata determinista de 3 cintas para la IA del enemigo | **Chomsky Tipo 0:** Máquina de Turing Multicinta y modelo JFLAP |
 
@@ -47,7 +47,7 @@ Para la sustentación académica, el proyecto divide claramente los niveles de p
 1. **Tipo 2 – Gramática Libre de Contexto (Música del Cuatro):**
    - Archivo de definición: [`CuatroLlanero.g4`](../../backend/formal/grammar/CuatroLlanero.g4).
    - Valida que la combinación de acordes ejecutados por el jugador respete la estructura tradicional del joropo llanero (*Gabán, Pajarillo, Seis por Derecho, Zumbe y Zumbe, Tonada, Contrapunteo recursivo*).
-   - Emite una acción clasificada: `A` (Ataque), `D` (Defensa), `C` (Curación) o `E` (Error sintáctico por cuerda desafinada).
+   - Emite una acción clasificada: `A` (Ataque), `D` (Defensa), `C` (Carga / Reducción de furia) o `E` (Error sintáctico por cuerda desafinada).
 
 2. **Tipo 0 – Máquina de Turing Multicinta (IA Táctica del Enemigo):**
    - Archivos: [`turing.py`](../../backend/formal/turing/turing.py) y [`maquina_turing_enemigo.jff`](../../backend/formal/turing/maquina_turing_enemigo.jff).

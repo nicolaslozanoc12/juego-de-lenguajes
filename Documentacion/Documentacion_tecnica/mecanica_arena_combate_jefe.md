@@ -46,19 +46,18 @@ El borde del rectángulo actúa como una barrera mística del folclore llanero:
 
 | Propiedad | Comportamiento en Juego |
 | :--- | :--- |
-| **Colisión Infranqueable** | No permite salir de la arena mientras el jefe esté vivo. |
-| **Penalización por Contacto** | Si el llanero toca el borde del muro, recibe daño por segundo y sufre un empuje (*knockback*) hacia el centro, obligándolo a mantenerse en el ruedo tocando el cuatro. |
-| **Desactivación** | Cuando la Máquina de Turing en el servidor determine la victoria (vida del jefe en `0`), el muro desaparece y la cámara vuelve a seguir al llanero libremente. |
+| **Colisión Infranqueable** | El `MuroEspectral` rodea los 4 bordes de la arena rectangular (`ARENA_RECT` de `96, 250` a `1184, 642`) e impide escapar del ruedo. |
+| **Penalización por Contacto** | Si el llanero cruza el límite interior (`ARENA_RECT`), recibe `5` de daño y un empuje (*knockback*) hacia el centro (`aplicar_rebote_muro`), obligándolo a permanecer dentro del ruedo. |
+| **Desactivación (Planeado)** | En la progresión completa, al quedar la vida del jefe en `0` se abriría el muro para volver a la exploración libre. |
 
 ---
 
-## 4. Estructura de la Escena en Godot 4 (`CombatArena.tscn`)
+## 4. Estructura actual de la Escena en Godot 4 (`CombatArena.tscn`)
 
-Con la vista Top-Down 2D, la escena se compone de:
+En vista Top-Down 2D ortogonal (1280×720, baldosas de 32×32 px), la escena [CombatArena.tscn](../../cliente_Godot/scenes/combat/CombatArena.tscn) se compone actualmente de:
 
-* **`FondoCielo`:** Textura fija en la parte superior con la noche y la luna.(la nubes e mueven hacia un lado)
-* **`TileMapLayer` (Ortogonal 2D):** Baldosas cuadradas planas (32×32 px) de pasto seco, tierra y camino de sabana.
-* **`Obstaculos`:** Rocas y vegetación con colisión (`StaticBody2D`).
-* **`Llanero` (`CharacterBody2D`):** Movimiento en 4 direcciones con `W, A, S, D` y ejecución de acordes con `J, K, L, I + Espacio`.
-* **`JefeEspanto` (`CharacterBody2D`):** Posicionado en el centro, controlado por las decisiones de la Máquina de Turing.
-* **`MuroMagicoArea2D`:** Borde rectangular con detector de colisión que inflige daño al contacto.
+* **`HorizonteLlanura` (`CanvasLayer` + `HorizonteLlanura.gd`):** Franja superior fija con `CieloFondo`, `NubesA` / `NubesB` desplazándose horizontalmente, `LunaLlanera` con oscilación sutil y `ArbolesHorizonte` (`Saman1`..`Saman6`) animados con el shader `viento_arboles.gdshader`.
+* **`TileMapLayer`s (Ortogonal 2D, 32×32 px):** `SueloSabana`, `DecoracionSabana`, `ObstaculosSabana` y `MuroEspectral` (cercado cerrado en sus 4 lados).
+* **`Llanero` (`CharacterBody2D` + `Llanero.gd`):** Movimiento y animaciones en **8 direcciones** con `WASD` / Flechas (`walk_*` e `idle_*`). Si comete un error gramatical queda inmovilizado durante `1.0 s`.
+* **`ElSilbon` (`CharacterBody2D` + `ElSilbon.gd`):** Patrulla y acecho en **8 direcciones** dentro de la arena.
+* **`Luciernagas` (`CPUParticles2D`), `MusicaAmbiente` (`AudioStreamPlayer`), `CuatroController`, `NetworkClient` y `UI/LabelEstado`:** Controlan ambiente, entrada de acordes (`J, K, L, I + Espacio`, `Backspace`), comunicación TCP con Python (`127.0.0.1:8765`) y retroalimentación de combate.

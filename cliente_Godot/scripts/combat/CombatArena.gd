@@ -97,33 +97,35 @@ func _on_combate_resuelto(data: Dictionary) -> void:
 		return
 
 	var estado_partida := str(data.get("estado", "JUGANDO"))
+	var vida_jug := int(data.get("vida_jugador", llanero.health if llanero else 100))
+	var vida_ene := int(data.get("vida_enemigo", 100))
 	if data.get("valido", false):
 		if estado_partida == "VICTORIA":
-			label_estado.text = "🏆 ¡VICTORIA! Venciste a El Silbón con %s | Llanero: %s HP" % [
+			label_estado.text = "🏆 ¡VICTORIA! Venciste a El Silbón con %s | Llanero: %d HP" % [
 				data.get("golpe", "tu música"),
-				data.get("vida_jugador", "?"),
+				vida_jug,
 			]
 			label_estado.modulate = Color(1.0, 0.92, 0.45)
 		elif estado_partida == "DERROTA":
 			label_estado.text = "💀 DERROTA... El Silbón te venció (%s) | Llanero: 0 HP" % data.get("enemigo_accion", "")
 			label_estado.modulate = Color(1.0, 0.4, 0.4)
 		else:
-			label_estado.text = "⚔️ %s | Silbón: %s | Llanero: %s HP | Silbón: %s HP" % [
+			label_estado.text = "⚔️ %s | Silbón: %s | Llanero: %d HP | Silbón: %d HP" % [
 				data.get("golpe", "Turno resuelto"),
 				data.get("enemigo_accion", "-"),
-				data.get("vida_jugador", "?"),
-				data.get("vida_enemigo", "?"),
+				vida_jug,
+				vida_ene,
 			]
 			label_estado.modulate = Color(0.7, 1.0, 0.75)
 	elif data.has("vida_jugador"):
+		if llanero:
+			llanero.inmovilizar(1.0)
 		if estado_partida == "DERROTA":
-			label_estado.text = "💀 DERROTA por cuerda desafinada (%s) | Llanero: 0 HP" % data.get("enemigo_accion", "CASTIGO")
+			label_estado.text = "💀 DERROTA... (%s) | Llanero: 0 HP" % data.get("enemigo_accion", "")
 		else:
-			label_estado.text = "🎸✖ Desafinado | Silbón: %s (-%s HP) | Llanero: %s HP | Silbón: %s HP" % [
-				data.get("enemigo_accion", "CASTIGO"),
-				data.get("dano_jugador", 35),
-				data.get("vida_jugador", "?"),
-				data.get("vida_enemigo", "?"),
+			label_estado.text = "🎸✖ Desafinado | ¡Inmovilizado 1s! (0 daño) | Llanero: %d HP | Silbón: %d HP" % [
+				vida_jug,
+				vida_ene,
 			]
 		label_estado.modulate = Color(1.0, 0.45, 0.45)
 	else:

@@ -6,6 +6,8 @@ const SPEED: float = 220.0
 var health: int = 100
 var knockback_velocity: Vector2 = Vector2.ZERO
 var ultima_direccion: String = "down_right"
+var inmovilizado_restante: float = 0.0
+var _estaba_inmovilizado: bool = false
 
 @onready var sprite_animado: AnimatedSprite2D = $AnimatedSprite2D
 
@@ -16,10 +18,21 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
+	if inmovilizado_restante > 0.0:
+		inmovilizado_restante = maxf(0.0, inmovilizado_restante - delta)
+		if inmovilizado_restante == 0.0 and _estaba_inmovilizado:
+			_estaba_inmovilizado = false
+			modulate = Color.WHITE
+	elif _estaba_inmovilizado:
+		_estaba_inmovilizado = false
+		modulate = Color.WHITE
+
 	var input_dir := Vector2.ZERO
 	if knockback_velocity.length() > 5.0:
 		velocity = knockback_velocity
 		knockback_velocity = knockback_velocity.move_toward(Vector2.ZERO, 900.0 * delta)
+	elif inmovilizado_restante > 0.0:
+		velocity = Vector2.ZERO
 	else:
 		input_dir = Vector2(
 			Input.get_axis("ui_left", "ui_right"),
@@ -59,3 +72,16 @@ func aplicar_rebote_muro(centro_arena: Vector2, dano: int) -> void:
 	modulate = Color(1.0, 0.35, 0.55)
 	var tween := create_tween()
 	tween.tween_property(self, "modulate", Color.WHITE, 0.35)
+
+
+## Inmoviliza al Llanero durante `duracion` segundos (p. ej. al errar la gramática).
+func inmovilizar(duracion: float = 1.0) -> void:
+	inmovilizado_restante = maxf(inmovilizado_restante, duracion)
+	if inmovilizado_restante > 0.0:
+		_estaba_inmovilizado = true
+		velocity = Vector2.ZERO
+		modulate = Color(1.0, 0.72, 0.45)
+
+
+func esta_inmovilizado() -> bool:
+	return inmovilizado_restante > 0.0

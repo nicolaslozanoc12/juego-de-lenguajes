@@ -104,13 +104,13 @@ class TuringTests(unittest.TestCase):
 
 
 class CombatTests(unittest.TestCase):
-    def test_invalid_input_reaches_enemy_as_error(self):
+    def test_invalid_input_reaches_enemy_as_error_without_damage(self):
         response = CombatController().process("TTDF")
         self.assertFalse(response["valido"])
         self.assertEqual(response["cintas"]["cinta1"], ["E"])
         self.assertEqual(response["enemigo_accion"], "CASTIGO")
-        self.assertEqual(response["dano_jugador"], 35)
-        self.assertEqual(response["vida_jugador"], 65)
+        self.assertEqual(response["dano_jugador"], 0)
+        self.assertEqual(response["vida_jugador"], 100)
 
     def test_protocol_processes_json(self):
         response = process_request(json.dumps({"secuencia": "TDDTF"}), CombatController())
@@ -144,9 +144,11 @@ class CombatTests(unittest.TestCase):
                 step = TuringStep({}, {}, decision)
                 self.assertEqual(CombatController._dano_del_enemigo(step, "D"), 0)
 
-    def test_syntax_error_always_causes_critical_damage(self):
-        step = TuringStep({}, {}, "ATAQUE_RAPIDO")
-        self.assertEqual(CombatController._dano_del_enemigo(step, "E"), 35)
+    def test_syntax_error_causes_no_hp_damage(self):
+        for decision in ("ATAQUE_RAPIDO", "ATAQUE_PESADO", "CASTIGO"):
+            with self.subTest(decision=decision):
+                step = TuringStep({}, {}, decision)
+                self.assertEqual(CombatController._dano_del_enemigo(step, "E"), 0)
 
     def test_response_is_json_serializable_and_reports_victory(self):
         controller = CombatController()
@@ -159,12 +161,16 @@ class CombatTests(unittest.TestCase):
         self.assertEqual(response["dano_jugador"], 0)
         self.assertEqual(json.loads(json.dumps(response)), response)
 
-    def test_critical_damage_reports_defeat(self):
+    def test_repeated_attack_castigo_damage_reports_defeat(self):
         controller = CombatController()
-        controller.state = CombatState(vida_jugador=20)
+        controller.state = CombatState(vida_jugador=20, vida_enemigo=100)
+        controller.turing.step("A")
+        controller.turing.step("A")
 
-        response = controller.process("TTDF")
+        response = controller.process("TDDTF")
 
+        self.assertEqual(response["enemigo_accion"], "CASTIGO")
+        self.assertEqual(response["dano_jugador"], 35)
         self.assertEqual(response["estado"], "DERROTA")
         self.assertEqual(response["vida_jugador"], 0)
 

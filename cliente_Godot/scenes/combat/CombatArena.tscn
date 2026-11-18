@@ -1,20 +1,20 @@
-[gd_scene format=4]
+[gd_scene format=4 uid="uid://bgp0f3g3r1m3y"]
 
-[ext_resource type="Script" path="res://scripts/combat/CombatArena.gd" id="1_xonij"]
-[ext_resource type="Script" path="res://scripts/combat/HorizonteLlanura.gd" id="2_8yui8"]
-[ext_resource type="Texture2D" path="res://assets/sprites/horizonte/cielo_fondo.png" id="3_7nnwg"]
-[ext_resource type="Texture2D" path="res://assets/sprites/horizonte/nubes_nocturnas.png" id="4_f4knj"]
-[ext_resource type="Texture2D" path="res://assets/sprites/horizonte/luna_llanera.png" id="5_cqldo"]
-[ext_resource type="Shader" path="res://assets/shaders/viento_arboles.gdshader" id="6_pu5s8"]
-[ext_resource type="Texture2D" path="res://assets/sprites/horizonte/saman_grande.png" id="7_2jsc1"]
-[ext_resource type="Texture2D" path="res://assets/sprites/horizonte/saman_mediano.png" id="8_4bcy0"]
+[ext_resource type="Script" uid="uid://dnultf30wenuf" path="res://scripts/combat/CombatArena.gd" id="1_xonij"]
+[ext_resource type="Script" uid="uid://cqsukkkiigtrb" path="res://scripts/combat/HorizonteLlanura.gd" id="2_8yui8"]
+[ext_resource type="Texture2D" uid="uid://cue1r76fub8c0" path="res://assets/sprites/horizonte/cielo_fondo.png" id="3_7nnwg"]
+[ext_resource type="Texture2D" uid="uid://dmmt4gn51w7ee" path="res://assets/sprites/horizonte/nubes_nocturnas.png" id="4_f4knj"]
+[ext_resource type="Texture2D" uid="uid://cpkyt3eyhs0ff" path="res://assets/sprites/horizonte/luna_llanera.png" id="5_cqldo"]
+[ext_resource type="Shader" uid="uid://bp73fa71kf1to" path="res://assets/shaders/viento_arboles.gdshader" id="6_pu5s8"]
+[ext_resource type="Texture2D" uid="uid://iwffaxtcwcjb" path="res://assets/sprites/horizonte/saman_grande.png" id="7_2jsc1"]
+[ext_resource type="Texture2D" uid="uid://505s500y7yoq" path="res://assets/sprites/horizonte/saman_mediano.png" id="8_4bcy0"]
 [ext_resource type="TileSet" path="res://assets/sprites/tiles/sabana_tileset.tres" id="9_pqw83"]
-[ext_resource type="Script" path="res://scripts/combat/ElSilbon.gd" id="10_8k3du"]
+[ext_resource type="Script" uid="uid://bm5fwlac2m5vc" path="res://scripts/combat/ElSilbon.gd" id="10_8k3du"]
 [ext_resource type="SpriteFrames" path="res://assets/sprites/silbon_frames.tres" id="11_724mq"]
-[ext_resource type="Script" path="res://scripts/combat/Llanero.gd" id="12_qcjf4"]
+[ext_resource type="Script" uid="uid://bajsghwnh3ssm" path="res://scripts/combat/Llanero.gd" id="12_qcjf4"]
 [ext_resource type="SpriteFrames" path="res://assets/sprites/llanero_frames.tres" id="13_vw413"]
-[ext_resource type="Script" path="res://scripts/combat/CuatroController.gd" id="14_fxrfm"]
-[ext_resource type="AudioStream" path="res://assets/audio/musica/ambiente_pelea_silbon.wav" id="15_0urjw"]
+[ext_resource type="Script" uid="uid://cfbxq7rmmi27" path="res://scripts/combat/CuatroController.gd" id="14_fxrfm"]
+[ext_resource type="AudioStream" uid="uid://bw13xp3mmkcnx" path="res://assets/audio/musica/ambiente_pelea_silbon.wav" id="15_0urjw"]
 [ext_resource type="Script" uid="uid://chnuqipoyeuii" path="res://scripts/network/NetworkClient.gd" id="16_network"]
 
 [sub_resource type="ShaderMaterial" id="ShaderMaterial_om66t"]
@@ -233,7 +233,7 @@ script = ExtResource("16_network")
 
 [node name="MusicaAmbiente" type="AudioStreamPlayer" parent="." unique_id=1933533551]
 stream = ExtResource("15_0urjw")
-volume_db = -10.0
+volume_db = 3.649
 autoplay = true
 
 [node name="UI" type="CanvasLayer" parent="." unique_id=634216384]
