@@ -117,6 +117,16 @@ class CombatTests(unittest.TestCase):
         self.assertTrue(response["valido"])
         self.assertEqual(response["dano_enemigo"], 15)
 
+    def test_protocol_syncs_client_player_health_when_provided(self):
+        response = process_request(
+            json.dumps({"secuencia": "TDDTF", "vida_jugador": 85, "vida_enemigo": 70}),
+            CombatController(),
+        )
+        self.assertEqual(response["dano_jugador"], 10)
+        self.assertEqual(response["vida_jugador"], 75)
+        self.assertEqual(response["dano_enemigo"], 15)
+        self.assertEqual(response["vida_enemigo"], 55)
+
     def test_controller_returns_godot_json_snapshot(self):
         response = CombatController().process("TDDTF")
         expected_fields = {
@@ -180,6 +190,18 @@ class CombatTests(unittest.TestCase):
             "valido": False,
             "error": "JSON invalido",
         })
+
+    def test_protocol_resets_controller_and_turing_state(self):
+        controller = CombatController()
+        controller.process("TDDTF")
+        self.assertEqual(controller.turing.tape1, ["A"])
+
+        reset_resp = process_request(json.dumps({"reiniciar": True}), controller)
+        self.assertTrue(reset_resp["reiniciado"])
+        self.assertEqual(controller.state.vida_jugador, 100)
+        self.assertEqual(controller.state.vida_enemigo, 100)
+        self.assertEqual(controller.turing.tape1, [])
+        self.assertEqual(controller.turing.estado, "qObservacion")
 
 
 class ServerTests(unittest.TestCase):

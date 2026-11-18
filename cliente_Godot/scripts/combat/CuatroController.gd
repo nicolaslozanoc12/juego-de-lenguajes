@@ -46,6 +46,7 @@ const STREAM_POR_TOKEN := {
 
 var tokens_actuales: PackedStringArray = PackedStringArray()
 var input_bloqueado: bool = false
+var combate_terminado: bool = false
 var ultima_secuencia_enviada: String = ""
 var ultima_cadena_teclas_enviada: String = ""
 
@@ -145,8 +146,19 @@ func limpiar_secuencia() -> void:
 
 ## Libera el bloqueo de entrada cuando el servidor responde (invocado desde Issue #7).
 func desbloquear_input() -> void:
+	if combate_terminado:
+		return
 	_timer_desbloqueo.stop()
 	_establecer_bloqueo(false)
+
+
+## Bloquea permanentemente el Cuatro al terminar el combate (Victoria o Derrota).
+func finalizar_combate() -> void:
+	combate_terminado = true
+	_timer_desbloqueo.stop()
+	tokens_actuales.clear()
+	set_process_input(false)
+	_establecer_bloqueo(true)
 
 
 func obtener_secuencia_actual() -> String:

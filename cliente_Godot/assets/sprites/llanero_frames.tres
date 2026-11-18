@@ -162,6 +162,22 @@ region = Rect2(64, 96, 32, 32)
 atlas = ExtResource("1_m81hp")
 region = Rect2(96, 96, 32, 32)
 
+[sub_resource type="AtlasTexture" id="AtlasTexture_dead_0"]
+atlas = ExtResource("1_m81hp")
+region = Rect2(0, 256, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dead_1"]
+atlas = ExtResource("1_m81hp")
+region = Rect2(32, 256, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dead_2"]
+atlas = ExtResource("1_m81hp")
+region = Rect2(64, 256, 32, 32)
+
+[sub_resource type="AtlasTexture" id="AtlasTexture_dead_3"]
+atlas = ExtResource("1_m81hp")
+region = Rect2(96, 256, 32, 32)
+
 [resource]
 animations = [{
 "frames": [{
@@ -362,5 +378,22 @@ animations = [{
 }],
 "loop": 1,
 "name": &"walk_up_right",
+"speed": 8.0
+}, {
+"frames": [{
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dead_0")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dead_1")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dead_2")
+}, {
+"duration": 1.0,
+"texture": SubResource("AtlasTexture_dead_3")
+}],
+"loop": false,
+"name": &"dead",
 "speed": 8.0
 }]

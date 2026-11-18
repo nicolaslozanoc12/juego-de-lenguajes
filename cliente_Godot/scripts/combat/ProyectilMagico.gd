@@ -1,47 +1,85 @@
 class_name ProyectilMagico
 extends Area2D
 
-## Proyectil mágico pixel-art con detección de impacto por colisión física (Area2D).
+## Proyectil mágico pixel-art con detección física de impacto y expiración por esquive.
 
 signal impactado(objetivo: Node2D, posicion: Vector2)
+signal expirado
 
-const PLANTILLA_NOTA := [
-	"........oo......",
-	"........ooo.....",
-	"........oooo....",
-	"........oo.oo...",
-	"........oo..o...",
-	"........oo......",
-	"..oooo..oo......",
-	".oooooo.oo......",
-	"oooooooooo......",
-	"oooooooooo......",
-	".oooooooo.......",
-	"..oooooo........",
-	"....oo..........",
-	"................",
-	"................",
-	"................",
-]
-
-const PLANTILLA_ESPANTO := [
-	"................",
-	".....oooo.......",
-	"...oooooooo.....",
-	"..oooXXXXooo....",
-	".ooXXXXXXXXoo...",
-	".oXXooXXooXXo...",
-	"ooXXoXXXXoXXoo..",
-	"ooXXXXXXXXXXoo..",
-	"ooXXXXooXXXXoo..",
-	".oXXXXXXXXXXo...",
-	".ooXXXXXXXXoo...",
-	"..oooXXXXooo....",
-	"...oo.oo.oo.....",
-	"..o...o...o.....",
-	"................",
-	"................",
-]
+const PLANTILLAS := {
+	"nota": [
+		"........oo......",
+		"........ooo.....",
+		"........oooo....",
+		"........oo.oo...",
+		"........oo..o...",
+		"........oo......",
+		"..oooo..oo......",
+		".oooooo.oo......",
+		"oooooooooo......",
+		"oooooooooo......",
+		".oooooooo.......",
+		"..oooooo........",
+		"....oo..........",
+		"................",
+		"................",
+		"................",
+	],
+	"corte": [
+		"................",
+		"....ooo.........",
+		".....ooooo......",
+		"......oooooo....",
+		".......ooXXXoo..",
+		"........ooXXXXo.",
+		".........ooXXXXo",
+		"..........ooXXXo",
+		"..........ooXXXo",
+		".........ooXXXXo",
+		"........ooXXXXo.",
+		".......ooXXXoo..",
+		"......oooooo....",
+		".....ooooo......",
+		"....ooo.........",
+		"................",
+	],
+	"calavera": [
+		"................",
+		"....oooooooo....",
+		"..oooooooooooo..",
+		".ooooXXXXXXoooo.",
+		".oooXXXXXXXXooo.",
+		"oooXXooXXooXXooo",
+		"oooXXooXXooXXooo",
+		"oooXXXXXXXXXXooo",
+		".oooXXXooXXXooo.",
+		".ooooXXXXXXoooo.",
+		"..oooooXXooooo..",
+		"...oo.o..o.oo...",
+		"...oo.o..o.oo...",
+		"................",
+		"................",
+		"................",
+	],
+	"castigo": [
+		"................",
+		"......oo........",
+		".......ooo......",
+		"..ooo....ooo....",
+		"...ooooXXoooo...",
+		"....ooooXXXooo..",
+		"ooXXXXXoooooXXo.",
+		".oXXXXXXXXXXooo.",
+		".oXXXXXXXXXXooo.",
+		"ooXXXXXoooooXXo.",
+		"....ooooXXXooo..",
+		"...ooooXXoooo...",
+		"..ooo....ooo....",
+		".......ooo......",
+		"......oo........",
+		"................",
+	],
+}
 
 var objetivo: Node2D = null
 var velocidad: float = 560.0
@@ -51,10 +89,11 @@ var escala_sprite: float = 2.0
 var tamano_hitbox: float = 22.0
 var tipo_sprite: String = "nota"
 var teledirigido: bool = true
-var vida_maxima: float = 1.8
+var vida_maxima: float = 1.6
+var limites: Rect2 = Rect2()
 
 var _tiempo: float = 0.0
-var _ya_impacto: bool = false
+var _terminado: bool = false
 var _sprite: Sprite2D
 var _estela: CPUParticles2D
 
@@ -67,16 +106,17 @@ func configurar(opts: Dictionary) -> void:
 	tamano_hitbox = float(opts.get("hitbox", 22.0))
 	tipo_sprite = str(opts.get("tipo", "nota"))
 	teledirigido = bool(opts.get("teledirigido", true))
-	vida_maxima = float(opts.get("vida", 1.8))
+	vida_maxima = float(opts.get("vida", 1.6))
+	limites = opts.get("limites", Rect2())
 
 	var pos_inicial: Vector2 = opts.get("origen", Vector2.ZERO)
 	global_position = pos_inicial
-	if is_instance_valid(objetivo):
+	if opts.has("direccion"):
+		direccion = Vector2(opts["direccion"]).normalized()
+	elif is_instance_valid(objetivo):
 		var delta_obj := objetivo.global_position - pos_inicial
 		if delta_obj.length() > 1.0:
 			direccion = delta_obj.normalized()
-	elif opts.has("direccion"):
-		direccion = Vector2(opts["direccion"]).normalized()
 
 
 func _ready() -> void:
@@ -105,7 +145,7 @@ func _ready() -> void:
 	_estela.emission_shape = CPUParticles2D.EMISSION_SHAPE_SPHERE
 	_estela.emission_sphere_radius = 4.0
 	_estela.direction = -direccion
-	_estela.spread = 32.0
+	_estela.spread = 30.0
 	_estela.initial_velocity_min = 18.0
 	_estela.initial_velocity_max = 52.0
 	_estela.scale_amount_min = 2.0
@@ -117,11 +157,13 @@ func _ready() -> void:
 
 
 func _physics_process(delta: float) -> void:
-	if _ya_impacto:
+	if _terminado:
 		return
 
 	_tiempo += delta
-	if _tiempo >= vida_maxima:
+	if _tiempo >= vida_maxima or (limites.has_area() and not limites.has_point(global_position)):
+		_terminado = true
+		expirado.emit()
 		queue_free()
 		return
 
@@ -132,19 +174,21 @@ func _physics_process(delta: float) -> void:
 
 	global_position += direccion * velocidad * delta
 	if _sprite:
-		if tipo_sprite == "nota":
-			_sprite.rotation = sin(_tiempo * 14.0) * 0.22
+		if tipo_sprite in ["corte", "castigo"]:
+			_sprite.rotation = direccion.angle()
+		elif tipo_sprite == "calavera":
+			_sprite.rotation = sin(_tiempo * 10.0) * 0.16
 		else:
-			_sprite.rotation += delta * 9.0
+			_sprite.rotation = sin(_tiempo * 14.0) * 0.22
 
 
 func _on_body_entered(body: Node2D) -> void:
-	if _ya_impacto or not is_instance_valid(objetivo):
+	if _terminado or not is_instance_valid(objetivo):
 		return
 	if body != objetivo:
 		return
 
-	_ya_impacto = true
+	_terminado = true
 	_estela.emitting = false
 	generar_chispas(get_parent(), global_position, color_magia, 14)
 	impactado.emit(objetivo, global_position)
@@ -152,7 +196,7 @@ func _on_body_entered(body: Node2D) -> void:
 
 
 static func _crear_textura_pixel(tipo: String) -> ImageTexture:
-	var plantilla := PLANTILLA_ESPANTO if tipo == "espanto" else PLANTILLA_NOTA
+	var plantilla: Array = PLANTILLAS.get(tipo, PLANTILLAS["nota"])
 	var img := Image.create(16, 16, false, Image.FORMAT_RGBA8)
 	for y in range(16):
 		var fila: String = plantilla[y]
@@ -161,7 +205,7 @@ static func _crear_textura_pixel(tipo: String) -> ImageTexture:
 			if ch == "o":
 				img.set_pixel(x, y, Color(1.0, 1.0, 1.0, 0.96))
 			elif ch == "X":
-				img.set_pixel(x, y, Color(0.55, 0.2, 0.35, 1.0))
+				img.set_pixel(x, y, Color(0.28, 0.08, 0.22, 0.95))
 			else:
 				img.set_pixel(x, y, Color(0, 0, 0, 0))
 	return ImageTexture.create_from_image(img)
@@ -186,21 +230,22 @@ static func generar_chispas(contenedor: Node, pos: Vector2, color: Color, cantid
 	contenedor.add_child(particulas)
 	particulas.emitting = true
 
-	var timer := contenedor.get_tree().create_timer(0.55)
-	timer.timeout.connect(func() -> void:
-		if is_instance_valid(particulas):
-			particulas.queue_free()
-	)
+	var timer := Timer.new()
+	timer.one_shot = true
+	timer.wait_time = 0.55
+	timer.autostart = true
+	particulas.add_child(timer)
+	timer.timeout.connect(particulas.queue_free)
 
 
-## Crea texto flotante ascendente para daño, parry o estados en la arena.
+## Crea texto flotante ascendente para daño, parry o esquive en la arena.
 static func crear_texto_flotante(contenedor: Node, pos: Vector2, texto: String, color: Color) -> void:
 	if not is_instance_valid(contenedor):
 		return
 	var lbl := Label.new()
 	lbl.text = texto
-	lbl.position = pos + Vector2(-58, -68)
-	lbl.size = Vector2(140, 28)
+	lbl.position = pos + Vector2(-70, -68)
+	lbl.size = Vector2(160, 28)
 	lbl.horizontal_alignment = HORIZONTAL_ALIGNMENT_CENTER
 	lbl.add_theme_color_override("font_color", color)
 	lbl.add_theme_color_override("font_outline_color", Color(0.05, 0.05, 0.1, 0.95))

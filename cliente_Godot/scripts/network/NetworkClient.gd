@@ -18,9 +18,60 @@ var _requests_pending: Array[PackedByteArray] = []
 var _is_connected: bool = false
 var _warning_shown: bool = false
 
+static var _pid_global_servidor: int = -1
+static var _reiniciando_escena: bool = false
+
 
 func _ready() -> void:
-	_intentar_conexion()
+	_reiniciando_escena = false
+	if _iniciar_servidor_empaquetado():
+		# Espera breve para que backend_server.exe abra el socket antes del primer intento
+		_retry_timer = 0.45
+	else:
+		_intentar_conexion()
+
+
+func _notification(what: int) -> void:
+	if what == NOTIFICATION_WM_CLOSE_REQUEST:
+		_detener_servidor_empaquetado()
+
+
+func _exit_tree() -> void:
+	if _peer != null:
+		_peer.disconnect_from_host()
+	if not _reiniciando_escena:
+		_detener_servidor_empaquetado()
+
+
+func reiniciar_servidor_y_recargar() -> void:
+	_reiniciando_escena = true
+	if _peer != null and _peer.get_status() == StreamPeerTCP.STATUS_CONNECTED:
+		_peer.put_data((JSON.stringify({"reiniciar": true}) + "\n").to_utf8_buffer())
+
+
+func _iniciar_servidor_empaquetado() -> bool:
+	if OS.has_feature("editor"):
+		return false
+	if _pid_global_servidor > 0 and OS.is_process_running(_pid_global_servidor):
+		return false
+	var base_dir := OS.get_executable_path().get_base_dir()
+	for rel_path in ["backend_server/backend_server.exe", "backend_server.exe"]:
+		var ruta := base_dir.path_join(rel_path)
+		if FileAccess.file_exists(ruta):
+			var pid := OS.create_process(ruta, PackedStringArray(), true)
+			if pid > 0:
+				_pid_global_servidor = pid
+				return true
+			return false
+	return false
+
+
+func _detener_servidor_empaquetado() -> void:
+	if _peer != null:
+		_peer.disconnect_from_host()
+	if _pid_global_servidor > 0:
+		OS.kill(_pid_global_servidor)
+		_pid_global_servidor = -1
 
 
 func _process(delta: float) -> void:
@@ -49,7 +100,7 @@ func _process(delta: float) -> void:
 			_reintentar_si_corresponde(delta)
 
 
-func enviar_secuencia(secuencia: String) -> void:
+func enviar_secuencia(secuencia: String, vida_jugador: int = -1, vida_enemigo: int = -1) -> void:
 	if _peer == null:
 		advertencia.emit(SERVER_WARNING)
 		return
@@ -61,7 +112,11 @@ func enviar_secuencia(secuencia: String) -> void:
 		advertencia.emit(SERVER_WARNING)
 		return
 
-	var request := {"secuencia": secuencia}
+	var request: Dictionary = {"secuencia": secuencia}
+	if vida_jugador >= 0:
+		request["vida_jugador"] = vida_jugador
+	if vida_enemigo >= 0:
+		request["vida_enemigo"] = vida_enemigo
 	var line := JSON.stringify(request) + "\n"
 	if status == StreamPeerTCP.STATUS_CONNECTING:
 		# Conserva solo la última petición si la conexión acaba de iniciar en este frame
@@ -139,4 +194,6 @@ func _leer_respuestas() -> void:
 			continue
 
 		var data: Dictionary = parser.data
+		if bool(data.get("reiniciado", false)):
+			continue
 		combate_resuelto.emit(data)
