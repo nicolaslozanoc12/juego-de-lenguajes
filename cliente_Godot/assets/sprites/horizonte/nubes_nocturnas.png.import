@@ -2,16 +2,16 @@
 
 importer="texture"
 type="CompressedTexture2D"
-uid="uid://bbse1j1m1mp52"
-path="res://.godot/imported/demonio_espanto.png-2cfa98e03f91e43f0573db97534640ee.ctex"
+uid="uid://dmmt4gn51w7ee"
+path="res://.godot/imported/nubes_nocturnas.png-4f44b3b5a3f68a7bd209f2446500a2ee.ctex"
 metadata={
 "vram_texture": false
 }
 
 [deps]
 
-source_file="res://assets/sprites/demonio_espanto.png"
-dest_files=["res://.godot/imported/demonio_espanto.png-2cfa98e03f91e43f0573db97534640ee.ctex"]
+source_file="res://assets/sprites/horizonte/nubes_nocturnas.png"
+dest_files=["res://.godot/imported/nubes_nocturnas.png-4f44b3b5a3f68a7bd209f2446500a2ee.ctex"]
 
 [params]
 
